@@ -4,6 +4,7 @@
       margin: 0;
       padding: 0;
     }
+    
     body {
       background-color: #212121;
       color: #e6edf3;
@@ -14,6 +15,7 @@
       min-height: 100vh;
       padding: 40px 20px;
     }
+    
     header {
       background: url('assets/header.png') center/cover no-repeat;
       width: 100%;
@@ -23,6 +25,7 @@
       margin-bottom: 20px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
+    
     .spinner {
       border: 4px solid #161b22;
       border-top: 4px solid #58a6ff;
@@ -32,10 +35,12 @@
       animation: spin 1s linear infinite;
       margin: 10px auto;
     }
+    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
     .status-indicator {
       padding: 15px 30px;
       border-radius: 12px;
@@ -45,14 +50,17 @@
       box-shadow: 0 6px 16px rgba(0,0,0,0.2);
       text-align: center;
     }
+    
     .online {
       background-color: #1f883d;
       color: white;
     }
+    
     .offline {
       background-color: #cf222e;
       color: white;
     }
+    
     .card {
       background: #313131;
       padding: 30px;
@@ -66,18 +74,22 @@
       margin-bottom: 30px;
       animation: fadeIn 0.8s ease-in-out;
     }
+    
     .card div {
       text-align: center;
     }
+    
     .label {
       color: #8b949e;
       font-size: 0.9em;
       margin-bottom: 5px;
     }
+    
     .value {
       font-size: 1.4em;
       font-weight: 600;
     }
+    
     .services, .chart-container, .tech, .incidents {
       max-width: 800px;
       width: 100%;
@@ -87,29 +99,35 @@
       box-shadow: 0 8px 20px rgba(0,0,0,0.25);
       margin-bottom: 30px;
     }
+    
     .services h2, .tech h2, .incidents h2 {
       font-size: 1.2rem;
       margin-bottom: 15px;
     }
+    
     .service {
       display: flex;
       justify-content: space-between;
       padding: 8px 0;
       border-bottom: 1px solid #2b3137;
     }
+    
     .service:last-child {
       border-bottom: none;
     }
+    
     .online-dot { color: #1f883d; }
     .offline-dot { color: #cf222e; }
     .chart-container canvas {
       margin-top: 10px;
     }
+    
     footer {
       margin-top: 15px;
       font-size: 0.85em;
       color: #8b949e;
     }
+    
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
