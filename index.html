@@ -23,16 +23,32 @@
       padding: 40px 20px;
     }
     header {
-      background: url('public/header.png') center/cover no-repeat;
+      background: url('https://i.imgur.com/Mkpw5Cp.png') center/cover no-repeat;
       width: 100%;
       max-width: 800px;
       height: 180px;
       border-radius: 20px;
-      margin-bottom: 30px;
+      margin-bottom: 20px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
+    .status-indicator {
+      padding: 15px 30px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      font-weight: 600;
+      font-size: 1.2rem;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+    .online {
+      background-color: #1f883d;
+      color: white;
+    }
+    .offline {
+      background-color: #cf222e;
+      color: white;
+    }
     .card {
-      background: #515151;
+      background: #414141;
       padding: 30px;
       border-radius: 16px;
       max-width: 800px;
@@ -55,12 +71,6 @@
       font-size: 1.4em;
       font-weight: 600;
     }
-    .status-online {
-      color: #3fb950;
-    }
-    .status-offline {
-      color: #f85149;
-    }
     footer {
       margin-top: 40px;
       font-size: 0.85em;
@@ -75,11 +85,9 @@
 <body>
   <header></header>
 
+  <div id="status-banner" class="status-indicator">Checking status...</div>
+
   <div class="card" id="status-card">
-    <div>
-      <div class="label">Status</div>
-      <div class="value" id="status">Loading...</div>
-    </div>
     <div>
       <div class="label">Ping</div>
       <div class="value" id="ping">--</div>
@@ -108,22 +116,22 @@
 
   <script>
     async function loadStatus() {
+      const banner = document.getElementById("status-banner");
       try {
         const res = await fetch("https://discord-bot-e6f7.onrender.com/status");
         const data = await res.json();
 
-        document.getElementById("status").textContent = data.status;
-        document.getElementById("status").classList.add(
-          data.status === "online" ? "status-online" : "status-offline"
-        );
+        banner.textContent = data.status === "online" ? "🟢 Bot Online" : "🔴 Bot Offline";
+        banner.className = `status-indicator ${data.status === "online" ? "online" : "offline"}`;
+
         document.getElementById("ping").textContent = `${data.ping} ms`;
         document.getElementById("uptime").textContent = data.uptime;
         document.getElementById("guilds").textContent = data.guilds;
         document.getElementById("users").textContent = data.users;
         document.getElementById("updated").textContent = new Date(data.updated).toLocaleString();
       } catch (err) {
-        document.getElementById("status").textContent = "Error";
-        document.getElementById("status").classList.add("status-offline");
+        banner.textContent = "⚠️ Error loading status";
+        banner.className = "status-indicator offline";
         console.error("Failed to fetch status:", err);
       }
     }
