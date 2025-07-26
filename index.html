@@ -235,7 +235,7 @@
           document.getElementById("uptime").textContent = data.uptime;
           document.getElementById("guilds").textContent = data.guilds;
           document.getElementById("users").textContent = data.users;
-          document.getElementById("updated").textContent = new Date(data.updated).toLocaleTimeString();
+          document.getElementById("updated").textContent = new Date(data.updated).toLocaleString();
           document.getElementById("boot").textContent = new Date(Date.now() - parseUptime(data.uptime)).toLocaleString();
 
           document.getElementById("api-status").textContent = "● Online";
