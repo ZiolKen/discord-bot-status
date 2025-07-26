@@ -347,7 +347,7 @@
           pingChart.update();
         } catch (err) {
           if (spinner) spinner.style.display = "none";
-          banner.textContent = "🔴 DOWN ⚠️";
+          banner.textContent = "🔴 Bot Offline";
           banner.className = "status-indicator offline";
           document.getElementById("host").textContent = "🔴 DOWN ⚠️";
           document.getElementById("api-status").textContent = "● Offline";
