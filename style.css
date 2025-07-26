@@ -1,55 +1,61 @@
-body {
+* {
   margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: #f8f9fb;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background-color: #f5f7fa;
   color: #333;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 
 header {
-  text-align: center;
-  background-color: #222;
+  background: #111827;
   color: white;
-  padding-bottom: 1rem;
+  padding: 1.5rem;
+  text-align: center;
 }
 
 header img {
-  width: 100%;
+  max-width: 100%;
   max-height: 200px;
   object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 1rem;
 }
 
 main {
+  flex: 1;
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 2rem;
 }
 
 .status-card {
   background: white;
-  padding: 2rem;
   border-radius: 16px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
   max-width: 400px;
-  text-align: center;
+  width: 100%;
 }
 
-.status {
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-top: 1rem;
+.status-card h2 span.online {
+  color: green;
 }
 
-.online {
-  color: #3bb34a;
-}
-
-.offline {
-  color: #e74c3c;
+.status-card h2 span.offline {
+  color: red;
 }
 
 footer {
+  background: #111827;
+  color: white;
   text-align: center;
   padding: 1rem;
-  font-size: 0.9rem;
-  color: #aaa;
 }
