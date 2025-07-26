@@ -147,14 +147,74 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 800px;
+      width: 100%;
+      margin-bottom: 20px;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .invite-card {
+      background-color: #238636;
+      color: white;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1.1rem;
+      text-decoration: none;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+      display: inline-flex;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+
+    .discord-logo {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      filter: invert(1);
+    }
+
+    .invite-card:hover {
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+
+    .invite-card.spin {
+      animation: spin 0.6s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.07); }
+    }
+
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
   </style>
   
 </head>
 
 <body>
   <header></header>
-  <div id="status-banner" class="status-indicator">
-    <div class="spinner" id="spinner"></div>
+  <div class="status-header">
+    <div id="status-banner" class="status-indicator">
+      <div class="spinner" id="spinner"></div>
+    </div>
+    <a href="https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=8&scope=bot%20applications.commands" 
+     target="_blank" 
+     class="invite-card">
+    <img src="https://static.cdnlogo.com/logos/d/64/discord.png"
+         alt="Discord"
+         class="discord-logo" />
+    Invite Bot
+  </a>
   </div>
 
   <div class="card" id="status-card">
@@ -251,7 +311,9 @@
           const data = await res.json();
 
           if (spinner) spinner.style.display = "none";
-          banner.textContent = data.status === "online" ? "🟢 Bot Online" : "🔴 Bot Offline";
+          banner.innerHTML = data.status === "online"
+            ? "🟢 Bot Online"
+            : "🔴 Bot Offline";
           banner.className = `status-indicator ${data.status === "online" ? "online" : "offline"}`;
 
           document.getElementById("host").textContent = "🟢 Online";
@@ -301,6 +363,15 @@
     });
   </script>
   
+  <script>
+  function animateClickCard(el) {
+    el.classList.remove('spin');         
+    void el.offsetWidth;        
+    el.classList.add('spin');
+    setTimeout(() => el.classList.remove('spin'), 600);
+  }
+  </script>
+
 </body>
 
 </html>
