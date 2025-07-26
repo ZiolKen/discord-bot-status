@@ -195,18 +195,20 @@
 
 <body>
   <header></header>
-  <div class="status-header">
-    <div id="status-banner" class="status-indicator">
-      <div class="spinner" id="spinner"></div>
-    </div>
-    <a href="https://discord.com/api/oauth2/authorize?client_id=YOUR_CLIENT_ID&permissions=8&scope=bot%20applications.commands" 
-     target="_blank" 
-     class="invite-card">
-    <img src="https://static.cdnlogo.com/logos/d/64/discord.png"
-         alt="Discord"
-         class="discord-logo" />
-    Invite Bot
-  </a>
+<a class="status-header" style="background-color:#238636; color:white;">
+  <span style="font-size: 1.3em; margin-right: 6px;">🟢</span>
+  Bot Online
+</a>
+
+<a href="https://discord.com/oauth2/authorize?client_id=1398238289500307578&scope=bot&permissions=8" 
+   target="_blank" 
+   class="invite-card"
+   onclick="animateClickCard(this)"
+   style="background-color:#238636; color:white;">
+  <img src="https://static.cdnlogo.com/logos/d/64/discord.png" 
+       class="discord-logo" alt="discord" />
+  Invite Bot
+</a>
   </div>
 
   <div class="card" id="status-card">
