@@ -3,12 +3,12 @@
   "short_name": "Bot Status",
   "icons": [
     {
-      "src": "ico.PNG",
+      "src": "https://files.catbox.moe/6a1vvf.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "ico.PNG",
+      "src": "https://files.catbox.moe/6a1vvf.png",
       "sizes": "512x512",
       "type": "image/png"
     }
