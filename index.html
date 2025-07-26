@@ -3,40 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bot Status</title>
-  <link rel="stylesheet" href="style.css"/>
+  <title>ZiolKen Bot Status</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <img src="public/header.png" alt="Header Image">
-    <h1>Bot Status</h1>
+    <img src="public/header.png" alt="ZiolKen Bot Header" />
+    <h1>Discord Bot Status</h1>
   </header>
 
   <main>
-    <section class="status-card" id="bot-status">
-      <h2>Discord Bot</h2>
-      <p class="status">Loading...</p>
-    </section>
+    <div class="status-card">
+      <h2>Status: <span id="status">Loading...</span></h2>
+      <p><strong>Ping:</strong> <span id="ping">...</span> ms</p>
+      <p><strong>Uptime:</strong> <span id="uptime">...</span></p>
+      <p><strong>Guilds:</strong> <span id="guilds">...</span></p>
+      <p><strong>Users:</strong> <span id="users">...</span></p>
+      <p><strong>Last Updated:</strong> <span id="updated">...</span></p>
+    </div>
   </main>
 
   <footer>
-    <p>© 2025 ZKN Bot Status</p>
+    © 2025 ZiolKen Bot
   </footer>
 
-  <script>
-    fetch("https://discord-bot.onrender.com/status")
-      .then(res => res.json())
-      .then(data => {
-        const el = document.querySelector("#bot-status .status");
-        el.textContent = data.bot_online ? "🟢 Online" : "🔴 Offline";
-        el.classList.add(data.bot_online ? "online" : "offline");
-      })
-      .catch(() => {
-        const el = document.querySelector("#bot-status .status");
-        el.textContent = "⚠️ Cannot connect";
-        el.classList.add("offline");
-      });
-  </script>
-
+  <script src="script.js"></script>
 </body>
 </html>
