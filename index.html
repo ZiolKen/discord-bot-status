@@ -135,15 +135,15 @@
         document.getElementById("users").textContent = data.users;
         document.getElementById("updated").textContent = new Date(data.updated).toLocaleString();
       } catch (err) {
-        document.getElementById("host").textContent = "Unavailable";
-        banner.textContent = "⚠️ Error loading status";
+        document.getElementById("host").textContent = "🔴 DOWN ⚠️";
+        banner.textContent = "⚠️ Error loading status !";
         banner.className = "status-indicator offline";
         console.error("Failed to fetch status:", err);
       }
     }
 
     loadStatus();
-    setInterval(loadStatus, 1000); // Refresh every 30s
+    setInterval(loadStatus, 1000);
   </script>
 </body>
 </html>
