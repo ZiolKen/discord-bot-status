@@ -1,4 +1,4 @@
-const API_URL = "https://discord-bot.onrender.com/status";
+const API_URL = "https://discord-bot-e6f7.onrender.com/status";
 
 async function updateStatus() {
   try {
