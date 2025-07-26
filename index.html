@@ -4,20 +4,132 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bot Status</title>
-  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0d1117;
+      color: #e6edf3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    header {
+      background: url('https://i.imgur.com/Mkpw5Cp.png') center/cover no-repeat;
+      width: 100%;
+      max-width: 800px;
+      height: 180px;
+      border-radius: 20px;
+      margin-bottom: 30px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+    }
+    .card {
+      background: #161b22;
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 800px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 20px;
+      animation: fadeIn 0.8s ease-in-out;
+    }
+    .card div {
+      text-align: center;
+    }
+    .label {
+      color: #8b949e;
+      font-size: 0.9em;
+      margin-bottom: 5px;
+    }
+    .value {
+      font-size: 1.4em;
+      font-weight: 600;
+    }
+    .status-online {
+      color: #3fb950;
+    }
+    .status-offline {
+      color: #f85149;
+    }
+    footer {
+      margin-top: 40px;
+      font-size: 0.85em;
+      color: #8b949e;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
 <body>
-  <div class="container">
-    <h1>🤖 Discord Bot Status</h1>
-    <div class="status">
-      <p><strong>Status:</strong> <span id="status">Loading...</span></p>
-      <p><strong>Ping:</strong> <span id="ping">-</span>ms</p>
-      <p><strong>Uptime:</strong> <span id="uptime">-</span></p>
-      <p><strong>Guilds:</strong> <span id="guilds">-</span></p>
-      <p><strong>Users:</strong> <span id="users">-</span></p>
-      <p><strong>Updated:</strong> <span id="updated">-</span></p>
+  <header></header>
+
+  <div class="card" id="status-card">
+    <div>
+      <div class="label">Status</div>
+      <div class="value" id="status">Loading...</div>
+    </div>
+    <div>
+      <div class="label">Ping</div>
+      <div class="value" id="ping">--</div>
+    </div>
+    <div>
+      <div class="label">Uptime</div>
+      <div class="value" id="uptime">--</div>
+    </div>
+    <div>
+      <div class="label">Servers</div>
+      <div class="value" id="guilds">--</div>
+    </div>
+    <div>
+      <div class="label">Users</div>
+      <div class="value" id="users">--</div>
+    </div>
+    <div>
+      <div class="label">Last Update</div>
+      <div class="value" id="updated">--</div>
     </div>
   </div>
-  <script src="script.js"></script>
+
+  <footer>
+    © 2025 ZiolKen Bot
+  </footer>
+
+  <script>
+    async function loadStatus() {
+      try {
+        const res = await fetch("https://discord-bot-e6f7.onrender.com/status");
+        const data = await res.json();
+
+        document.getElementById("status").textContent = data.status;
+        document.getElementById("status").classList.add(
+          data.status === "online" ? "status-online" : "status-offline"
+        );
+        document.getElementById("ping").textContent = `${data.ping} ms`;
+        document.getElementById("uptime").textContent = data.uptime;
+        document.getElementById("guilds").textContent = data.guilds;
+        document.getElementById("users").textContent = data.users;
+        document.getElementById("updated").textContent = new Date(data.updated).toLocaleString();
+      } catch (err) {
+        document.getElementById("status").textContent = "Error";
+        document.getElementById("status").classList.add("status-offline");
+        console.error("Failed to fetch status:", err);
+      }
+    }
+
+    loadStatus();
+    setInterval(loadStatus, 30000); // Refresh every 30s
+  </script>
 </body>
 </html>
