@@ -24,13 +24,19 @@
   </footer>
 
   <script>
-    fetch("status.json")
+    fetch("https://discord-bot.onrender.com/status")
       .then(res => res.json())
       .then(data => {
         const el = document.querySelector("#bot-status .status");
         el.textContent = data.bot_online ? "🟢 Online" : "🔴 Offline";
         el.classList.add(data.bot_online ? "online" : "offline");
+      })
+      .catch(() => {
+        const el = document.querySelector("#bot-status .status");
+        el.textContent = "⚠️ Cannot connect";
+        el.classList.add("offline");
       });
   </script>
+
 </body>
 </html>
