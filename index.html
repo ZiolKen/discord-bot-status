@@ -1,13 +1,36 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Bot Status</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/App.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bot Status</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header>
+    <img src="assets/header.jpg" alt="Header Image">
+    <h1>Bot Status</h1>
+  </header>
+
+  <main>
+    <section class="status-card" id="bot-status">
+      <h2>Discord Bot</h2>
+      <p class="status">Loading...</p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 ZKN Bot Status</p>
+  </footer>
+
+  <script>
+    fetch("status.json")
+      .then(res => res.json())
+      .then(data => {
+        const el = document.querySelector("#bot-status .status");
+        el.textContent = data.bot_online ? "🟢 Online" : "🔴 Offline";
+        el.classList.add(data.bot_online ? "online" : "offline");
+      });
+  </script>
+</body>
 </html>
