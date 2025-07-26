@@ -1,10 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
+  <meta charSet="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ZiolKen Bot Status</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -31,6 +34,19 @@
       margin-bottom: 20px;
       box-shadow: 0 10px 20px rgba(0,0,0,0.3);
     }
+    .spinner {
+      border: 4px solid #161b22;
+      border-top: 4px solid #58a6ff;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      animation: spin 1s linear infinite;
+      margin: 10px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
     .status-indicator {
       padding: 15px 30px;
       border-radius: 12px;
@@ -38,6 +54,7 @@
       font-weight: 600;
       font-size: 1.2rem;
       box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+      text-align: center;
     }
     .online {
       background-color: #1f883d;
@@ -48,7 +65,7 @@
       color: white;
     }
     .card {
-      background: #414141;
+      background: #313131;
       padding: 30px;
       border-radius: 16px;
       max-width: 800px;
@@ -57,6 +74,7 @@
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 20px;
+      margin-bottom: 30px;
       animation: fadeIn 0.8s ease-in-out;
     }
     .card div {
@@ -71,6 +89,33 @@
       font-size: 1.4em;
       font-weight: 600;
     }
+    .services, .chart-container, .tech, .incidents {
+      max-width: 800px;
+      width: 100%;
+      background: #161b22;
+      border-radius: 16px;
+      padding: 20px 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+      margin-bottom: 30px;
+    }
+    .services h2, .tech h2, .incidents h2 {
+      font-size: 1.2rem;
+      margin-bottom: 15px;
+    }
+    .service {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #2b3137;
+    }
+    .service:last-child {
+      border-bottom: none;
+    }
+    .online-dot { color: #1f883d; }
+    .offline-dot { color: #cf222e; }
+    .chart-container canvas {
+      margin-top: 10px;
+    }
     footer {
       margin-top: 40px;
       font-size: 0.85em;
@@ -84,13 +129,14 @@
 </head>
 <body>
   <header></header>
-
-  <div id="status-banner" class="status-indicator">Checking status...</div>
+  <div id="status-banner" class="status-indicator">
+    <div class="spinner" id="spinner"></div>
+  </div>
 
   <div class="card" id="status-card">
     <div>
       <div class="label">Host Service</div>
-      <div class="value" id="host">Checking...</div>
+      <div class="value" id="host">--</div>
     </div>
     <div>
       <div class="label">Ping</div>
@@ -114,36 +160,121 @@
     </div>
   </div>
 
+  <div class="services">
+    <h2>🔧 Services</h2>
+    <div class="service">
+      <span>Discord Gateway</span>
+      <span class="online-dot">● Online</span>
+    </div>
+    <div class="service">
+      <span>Command System</span>
+      <span class="online-dot">● Online</span>
+    </div>
+    <div class="service">
+      <span>API Endpoint</span>
+      <span class="online-dot" id="api-status">● Online</span>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <h2>📈 Ping History</h2>
+    <canvas id="pingChart" height="100"></canvas>
+  </div>
+
+  <div class="tech">
+    <h2>🧠 Technical Info</h2>
+    <div class="service"><span>Bot Version</span><span>1.8.2</span></div>
+    <div class="service"><span>discord.js</span><span>14.13.0</span></div>
+    <div class="service"><span>Node.js</span><span>18.x</span></div>
+    <div class="service"><span>Last Boot</span><span id="boot">--</span></div>
+  </div>
+
   <footer>
-    © 2025 ZiolKen Bot
+    © 2025 ZiolKen | Bot Status
   </footer>
 
   <script>
-    async function loadStatus() {
-      const banner = document.getElementById("status-banner");
-      try {
-        const res = await fetch("https://discord-bot-e6f7.onrender.com/status");
-        const data = await res.json();
+    document.addEventListener("DOMContentLoaded", () => {
+      const pingChart = new Chart(document.getElementById('pingChart'), {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Ping (ms)',
+            data: [],
+            borderColor: '#58a6ff',
+            backgroundColor: 'rgba(88, 166, 255, 0.2)',
+            tension: 0.3,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { display: false },
+            y: { beginAtZero: true }
+          }
+        }
+      });
 
-        banner.textContent = data.status === "online" ? "🟢 Bot Online" : "🔴 Bot Offline";
-        banner.className = `status-indicator ${data.status === "online" ? "online" : "offline"}`;
+      async function loadStatus() {
+        const banner = document.getElementById("status-banner");
+        const spinner = document.getElementById("spinner");
+        if (spinner) spinner.style.display = "inline-block";
 
-        document.getElementById("host").textContent = "Online";
-        document.getElementById("ping").textContent = `${data.ping} ms`;
-        document.getElementById("uptime").textContent = data.uptime;
-        document.getElementById("guilds").textContent = data.guilds;
-        document.getElementById("users").textContent = data.users;
-        document.getElementById("updated").textContent = new Date(data.updated).toLocaleString();
-      } catch (err) {
-        document.getElementById("host").textContent = "🔴 DOWN ⚠️";
-        banner.textContent = "⚠️ Error loading status !";
-        banner.className = "status-indicator offline";
-        console.error("Failed to fetch status:", err);
+        try {
+          const res = await fetch("https://discord-bot-e6f7.onrender.com/status");
+          const data = await res.json();
+
+          if (spinner) spinner.style.display = "none";
+          banner.textContent = data.status === "online" ? "🟢 Bot Online" : "🔴 Bot Offline";
+          banner.className = `status-indicator ${data.status === "online" ? "online" : "offline"}`;
+
+          document.getElementById("host").textContent = "🟢 Online";
+          document.getElementById("ping").textContent = `${data.ping} ms`;
+          document.getElementById("uptime").textContent = data.uptime;
+          document.getElementById("guilds").textContent = data.guilds;
+          document.getElementById("users").textContent = data.users;
+          document.getElementById("updated").textContent = new Date(data.updated).toLocaleTimeString();
+          document.getElementById("boot").textContent = new Date(Date.now() - parseUptime(data.uptime)).toLocaleString();
+
+          document.getElementById("api-status").textContent = "● Online";
+          document.getElementById("api-status").className = "online-dot";
+
+          const now = new Date().toLocaleTimeString();
+          if (pingChart.data.labels.length >= 30) {
+            pingChart.data.labels.shift();
+            pingChart.data.datasets[0].data.shift();
+          }
+          pingChart.data.labels.push(now);
+          pingChart.data.datasets[0].data.push(data.ping);
+          pingChart.update();
+        } catch (err) {
+          if (spinner) spinner.style.display = "none";
+          banner.textContent = "⚠️ Error loading status !";
+          banner.className = "status-indicator offline";
+          document.getElementById("host").textContent = "🔴 DOWN ⚠️";
+          document.getElementById("api-status").textContent = "● Offline";
+          document.getElementById("api-status").className = "offline-dot";
+          console.error("Failed to fetch status:", err);
+        }
       }
-    }
 
-    loadStatus();
-    setInterval(loadStatus, 1000);
+      function parseUptime(str) {
+        const parts = str.split(" ");
+        let ms = 0;
+        for (const part of parts) {
+          const [val, unit] = part.match(/\d+|\D+/g);
+          if (unit === "h") ms += +val * 3600000;
+          if (unit === "m") ms += +val * 60000;
+          if (unit === "s") ms += +val * 1000;
+        }
+        return ms;
+      }
+
+      loadStatus();
+      setInterval(loadStatus, 1000);
+    });
   </script>
 </body>
 </html>
