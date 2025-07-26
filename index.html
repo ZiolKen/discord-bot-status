@@ -89,6 +89,10 @@
 
   <div class="card" id="status-card">
     <div>
+      <div class="label">Host Service</div>
+      <div class="value" id="host">Checking...</div>
+    </div>
+    <div>
       <div class="label">Ping</div>
       <div class="value" id="ping">--</div>
     </div>
@@ -124,12 +128,14 @@
         banner.textContent = data.status === "online" ? "🟢 Bot Online" : "🔴 Bot Offline";
         banner.className = `status-indicator ${data.status === "online" ? "online" : "offline"}`;
 
+        document.getElementById("host").textContent = "Online";
         document.getElementById("ping").textContent = `${data.ping} ms`;
         document.getElementById("uptime").textContent = data.uptime;
         document.getElementById("guilds").textContent = data.guilds;
         document.getElementById("users").textContent = data.users;
         document.getElementById("updated").textContent = new Date(data.updated).toLocaleString();
       } catch (err) {
+        document.getElementById("host").textContent = "Unavailable";
         banner.textContent = "⚠️ Error loading status";
         banner.className = "status-indicator offline";
         console.error("Failed to fetch status:", err);
