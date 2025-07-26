@@ -2,31 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ZiolKen Bot Status</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bot Status</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <img src="public/header.png" alt="ZiolKen Bot Header" />
-    <h1>Discord Bot Status</h1>
-  </header>
-
-  <main>
-    <div class="status-card">
-      <h2>Status: <span id="status">Loading...</span></h2>
-      <p><strong>Ping:</strong> <span id="ping">...</span> ms</p>
-      <p><strong>Uptime:</strong> <span id="uptime">...</span></p>
-      <p><strong>Guilds:</strong> <span id="guilds">...</span></p>
-      <p><strong>Users:</strong> <span id="users">...</span></p>
-      <p><strong>Last Updated:</strong> <span id="updated">...</span></p>
+  <div class="container">
+    <h1>🤖 Discord Bot Status</h1>
+    <div class="status">
+      <p><strong>Status:</strong> <span id="status">Loading...</span></p>
+      <p><strong>Ping:</strong> <span id="ping">-</span>ms</p>
+      <p><strong>Uptime:</strong> <span id="uptime">-</span></p>
+      <p><strong>Guilds:</strong> <span id="guilds">-</span></p>
+      <p><strong>Users:</strong> <span id="users">-</span></p>
+      <p><strong>Updated:</strong> <span id="updated">-</span></p>
     </div>
-  </main>
-
-  <footer>
-    © 2025 ZiolKen Bot
-  </footer>
-
+  </div>
   <script src="script.js"></script>
 </body>
 </html>
