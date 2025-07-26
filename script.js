@@ -1,33 +1,27 @@
-const API_URL = "https://discord-bot-e6f7.onrender.com/status";
+const apiUrl = "https://discord-bot-e6f7.onrender.com/status";
 
-async function updateStatus() {
+async function fetchStatus() {
   try {
-    const res = await fetch(API_URL);
+    const res = await fetch(apiUrl);
     const data = await res.json();
 
-    const statusEl = document.getElementById("status");
-    const pingEl = document.getElementById("ping");
-    const uptimeEl = document.getElementById("uptime");
-    const guildsEl = document.getElementById("guilds");
-    const usersEl = document.getElementById("users");
-    const updatedEl = document.getElementById("updated");
-
-    const isOnline = data.status === "online";
-
-    statusEl.textContent = isOnline ? "🟢 Online" : "🔴 Offline";
-    statusEl.className = isOnline ? "online" : "offline";
-
-    pingEl.textContent = data.ping;
-    uptimeEl.textContent = data.uptime;
-    guildsEl.textContent = data.guilds;
-    usersEl.textContent = data.users;
-    updatedEl.textContent = new Date(data.updated).toLocaleString();
-
+    document.getElementById("status").textContent = data.status;
+    document.getElementById("status").className = data.status;
+    document.getElementById("ping").textContent = data.ping;
+    document.getElementById("uptime").textContent = data.uptime;
+    document.getElementById("guilds").textContent = data.guilds;
+    document.getElementById("users").textContent = data.users;
+    document.getElementById("updated").textContent = new Date(data.updated).toLocaleString();
   } catch (e) {
-    document.getElementById("status").textContent = "⚠️ Cannot connect";
+    document.getElementById("status").textContent = "offline";
     document.getElementById("status").className = "offline";
+    document.getElementById("ping").textContent = "-";
+    document.getElementById("uptime").textContent = "-";
+    document.getElementById("guilds").textContent = "-";
+    document.getElementById("users").textContent = "-";
+    document.getElementById("updated").textContent = "-";
   }
 }
 
-updateStatus();
-setInterval(updateStatus, 15000); // cập nhật mỗi 15s
+fetchStatus();
+setInterval(fetchStatus, 10000);
