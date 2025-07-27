@@ -36,7 +36,7 @@
             : "🔴 Bot Offline";
           banner.className = `status-indicator ${data.status === "online" ? "online" : "offline"}`;
 
-          document.getElementById("host").textContent = "🟢 Online";
+          document.getElementById("host").textContent = "🟢 Operational";
           document.getElementById("ping").textContent = `${data.ping} ms`;
           document.getElementById("uptime").textContent = data.uptime;
           document.getElementById("guilds").textContent = data.guilds;
