@@ -19,7 +19,7 @@
     header {
       background: url('assets/header.png') center/cover no-repeat;
       width: 100%;
-      max-width: 390px;
+      max-width: 380px;
       height: 100px;
       border-radius: 20px;
       margin-bottom: 20px;
