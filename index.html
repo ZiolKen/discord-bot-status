@@ -171,6 +171,12 @@
           banner.textContent = "🔴 Bot Offline";
           banner.className = "status-indicator offline";
           document.getElementById("host").textContent = "🔴 DOWN ⚠️";
+          document.getElementById("ping").textContent = "-- ms";
+          document.getElementById("uptime").textContent = "--";
+          document.getElementById("guilds").textContent = "--";
+          document.getElementById("users").textContent = "--";
+          document.getElementById("updated").textContent = "-h -m -s";
+          document.getElementById("boot").textContent = "-h -m -s";
           document.getElementById("api-status").textContent = "● Offline";
           document.getElementById("api-status").className = "offline-dot";
           console.error("Failed to fetch status:", err);
