@@ -44,10 +44,11 @@ header { padding:32px 0; }
 .ibtn {
   background: transparent;
   border: 0px solid transparent;
+  right: 0;
 }
 
 .ibtn img {
-  max-width: 40px;
+  max-width: 44px;
 }
 
 /* GLOBAL STATUS */
