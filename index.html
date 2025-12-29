@@ -192,6 +192,8 @@ async function load() {
       new Date(s.updated).toLocaleString();
     document.getElementById("boot").textContent =
       new Date(s.lastBoot).toLocaleString();
+      
+    const hostState = s.hostService === "up" ? "online" : "down";
 
     renderService("host","Host System",hostState);
     renderService("gateway","Discord Gateway",s.services.gateway);
