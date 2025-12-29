@@ -26,12 +26,14 @@ h1 { margin:0 0 14px; }
 
 /* GLOBAL STATUS */
 .status-banner {
-  display:flex;
-  align-items:center;
-  gap:10px;
-  padding:14px;
-  border-radius:12px;
-  font-weight:600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 18px 16px;
+  border-radius: 12px;
+  font-weight: 600;
 }
 
 .status-banner.ok { background:#052e1b; color:var(--green); }
@@ -40,18 +42,45 @@ h1 { margin:0 0 14px; }
 .status-banner.loading { background:#111; color:var(--muted); }
 
 .pulse {
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  background:currentColor;
-  box-shadow:0 0 0 rgba(255,255,255,.4);
-  animation:pulse 2s infinite;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.pulse::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: pulse 1.6s ease-out infinite;
+  opacity: .7;
 }
 
 @keyframes pulse {
-  0% { box-shadow:0 0 0 0 currentColor; }
-  70% { box-shadow:0 0 0 8px transparent; }
-  100% { box-shadow:0 0 0 0 transparent; }
+  0% {
+    transform: scale(1);
+    opacity: .7;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+.status-banner.ok .pulse,
+.status-banner.ok .pulse::before {
+  background: #22c55e;
+}
+
+.status-banner.degraded .pulse,
+.status-banner.degraded .pulse::before {
+  background: #facc15;
+}
+
+.status-banner.down .pulse,
+.status-banner.down .pulse::before {
+  background: #ef4444;
 }
 
 /* SUMMARY */
