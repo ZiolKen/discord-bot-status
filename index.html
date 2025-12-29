@@ -78,8 +78,10 @@
     <div class="tech-grid">
       <div><span>Last update</span><b id="updated">--</b></div>
       <div><span>Last boot</span><b id="boot">--</b></div>
-      <div><span>Host status</span><b id="host-status">--</b></div>
       <div><span>Average ping</span><b id="ping-tech">--</b></div>
+      <div><span>Bot Ver</span><b>1.2.7</b></div>
+      <div><span>Node.js</span><b>22.16.0</b></div>
+      <div><span>discord.js</span><b>14.13.0</b></div>
     </div>
   </section>
 
@@ -136,7 +138,7 @@ function renderService(id, name, state) {
       <div class="service-meta">Uptime: ${uptime(stats[id])}</div>
     </div>
     <div class="service-status ${state}">
-      ${state==="online"?"Operational":"Down"}
+      ${state==="online"?"• Operational":"• Down"}
     </div>`;
 }
 
@@ -191,9 +193,9 @@ async function load() {
     document.getElementById("boot").textContent =
       new Date(s.lastBoot).toLocaleString();
 
-    const hostState = s.hostService === "up" ? "online" : "offline";
+    const hostState = s.hostService === "up" ? "operational" : "down";
     document.getElementById("host-status").textContent =
-      hostState === "online" ? "Operational" : "Down";
+      hostState === "operational" ? "• Operational" : "• Down";
 
     renderService("host","Host System",hostState);
     renderService("gateway","Discord Gateway",s.services.gateway);
