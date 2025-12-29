@@ -153,4 +153,4 @@ async function load() {
 }
 
 load();
-setInterval(load, 30000);
+setInterval(load, 1000);
