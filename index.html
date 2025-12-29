@@ -193,7 +193,7 @@ async function load() {
     document.getElementById("boot").textContent =
       new Date(s.lastBoot).toLocaleString();
 
-    const hostState = s.hostService === "up" ? "operational" : "down";
+    const hostState = s.hostService === "up" ? "online" : "offline";
     document.getElementById("host-status").textContent =
       hostState === "operational" ? "• Operational" : "• Down";
 
