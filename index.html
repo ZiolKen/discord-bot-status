@@ -91,12 +91,12 @@
     </div>
   </div>
 
-<div class="incidents">
-  <h2>🚨 Incidents History</h2>
-  <div id="incidents-list">
-    Loading incidents...
+  <div class="incidents">
+    <h2>🚨 Incidents History</h2>
+    <div id="incidents-list">
+      Loading incidents...
+    </div>
   </div>
-</div>
 
   <div class="chart-container">
     <h2>📈 Ping History</h2>
@@ -115,60 +115,49 @@
     © 2025 ZiolKen | Bot Status
   </footer>
   
-<script>
-const STATUS_URL = "https://discord-bot-us.onrender.com/status";
-const INCIDENTS_URL = "https://discord-bot-us.onrender.com/incidents";
+  <script>
+const state = {
+  online: false,
+  host: {
+    name: "--",
+    status: "unknown"
+  },
+  services: {},
+  stats: {
+    ping: null,
+    uptime: "--",
+    guilds: 0,
+    users: 0,
+    lastBoot: "--",
+    updated: "--"
+  },
+  incidents: []
+};
+function renderGlobalStatus() {
+  const banner = document.getElementById("status-banner");
 
-let pingChart;
+  const hasIncident = state.incidents.length > 0;
+  const allOperational = Object.values(state.services)
+    .every(s => s === "online");
 
-document.addEventListener("DOMContentLoaded", () => {
-  initChart();
+  let text = "All Systems Operational";
+  let cls = "online";
 
-  loadStatus();
-  loadIncidents();
-
-  setInterval(loadStatus, 3000);
-  setInterval(loadIncidents, 60000);
-});
-</script>
-
-<script>
-async function loadStatus() {
-  try {
-    const res = await fetch(STATUS_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error(res.status);
-
-    const d = await res.json();
-
-    renderBanner(d.status === "online");
-    renderStats(d);
-    renderServices(d.services, d.ping);
-    updateChart(d.ping);
-
-  } catch (e) {
-    console.error("STATUS ERROR", e);
-    renderBanner(false);
+  if (state.host.status === "down") {
+    text = "Major System Outage";
+    cls = "offline";
+  } else if (hasIncident) {
+    text = "Partial System Outage";
+    cls = "degraded";
+  } else if (!allOperational) {
+    text = "Degraded Performance";
+    cls = "degraded";
   }
-}
 
-function renderBanner(online) {
-  const el = document.getElementById("status-banner");
-  el.textContent = online
-    ? "All Systems Operational"
-    : "Partial System Outage";
-  el.className = `status-indicator ${online ? "online" : "offline"}`;
+  banner.textContent = text;
+  banner.className = `status-indicator ${cls}`;
 }
-
-function renderStats(d) {
-  document.getElementById("ping").textContent = `${Math.round(d.ping)} ms`;
-  document.getElementById("uptime").textContent = d.uptime;
-  document.getElementById("guilds").textContent = d.guilds;
-  document.getElementById("users").textContent = d.users;
-  document.getElementById("updated").textContent =
-    new Date(d.updated).toLocaleString();
-}
-
-function renderServices(services, ping) {
+function renderServices() {
   const map = {
     api: "API Endpoint",
     gateway: "Discord Gateway",
@@ -176,132 +165,105 @@ function renderServices(services, ping) {
   };
 
   const box = document.querySelector(".services");
-  box.innerHTML = `<h2>🔧 Services</h2>` +
-    Object.entries(map).map(([k, name]) => {
-      let state = services[k];
-      if (state === "online" && ping > 300) state = "degraded";
+  box.innerHTML = `<h2>🔧 Services</h2>`;
 
-      return `
-        <div class="service">
-          <span>${name}</span>
-          <span class="status-dot ${state}">
-            ${state === "online"
-              ? "Operational"
-              : state === "degraded"
-              ? "Degraded Performance"
-              : "Offline"}
-          </span>
-        </div>`;
-    }).join("");
-}
-</script>
+  for (const [key, label] of Object.entries(map)) {
+    let status = state.services[key] || "offline";
 
-<script>
-function initChart() {
-  pingChart = new Chart(document.getElementById("pingChart"), {
-    type: "line",
-    data: {
-      labels: [],
-      datasets: [{
-        data: [],
-        borderColor: "#3b82f6",
-        tension: 0.35,
-        fill: false
-      }]
-    },
-    options: {
-      plugins: { legend: { display: false }},
-      scales: {
-        x: { display: false },
-        y: { beginAtZero: true }
-      }
+    // 🔥 Incident ép service xuống
+    if (state.incidents.some(i => i.service === key)) {
+      status = "offline";
     }
-  });
-}
 
-function updateChart(ping) {
-  const t = new Date().toLocaleTimeString();
-  if (pingChart.data.labels.length >= 40) {
-    pingChart.data.labels.shift();
-    pingChart.data.datasets[0].data.shift();
+    box.innerHTML += `
+      <div class="service">
+        <span>${label}</span>
+        <span class="status-dot ${status}">
+          ${status === "online"
+            ? "Operational"
+            : status === "degraded"
+            ? "Degraded Performance"
+            : "Offline"}
+        </span>
+      </div>
+    `;
   }
-  pingChart.data.labels.push(t);
-  pingChart.data.datasets[0].data.push(Math.round(ping));
-  pingChart.update();
 }
-</script>
+function renderStats() {
+  document.getElementById("host").textContent = state.host.name;
+  document.getElementById("ping").textContent =
+    state.stats.ping != null ? `${Math.round(state.stats.ping)} ms` : "N/A";
+  document.getElementById("uptime").textContent = state.stats.uptime;
+  document.getElementById("guilds").textContent = state.stats.guilds;
+  document.getElementById("users").textContent = state.stats.users;
+  document.getElementById("updated").textContent =
+    new Date(state.stats.updated).toLocaleString();
+  document.getElementById("boot").textContent =
+    new Date(state.stats.lastBoot).toLocaleString();
+}
+async function loadStatus() {
+  try {
+    const res = await fetch(STATUS_URL, { cache: "no-store" });
+    const d = await res.json();
 
-<script>
+    state.online = d.status === "online";
+
+    state.host = {
+      name: d.host,
+      status: d.hostService
+    };
+
+    state.services = d.services;
+
+    state.stats = {
+      ping: d.ping,
+      uptime: d.uptime,
+      guilds: d.guilds,
+      users: d.users,
+      lastBoot: d.lastBoot,
+      updated: d.updated
+    };
+
+    renderStats();
+    renderServices();
+    renderGlobalStatus();
+    if (d.ping != null) updateChart(d.ping);
+
+  } catch {
+    state.host.status = "down";
+    state.services = {};
+    renderGlobalStatus();
+  }
+}
 async function loadIncidents() {
   try {
     const res = await fetch(INCIDENTS_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error(res.status);
-
-    const list = await res.json();
-    renderIncidents(list);
-
-  } catch (e) {
-    console.error("INCIDENTS ERROR", e);
-    document.getElementById("incidents-list").innerHTML =
-      `<div class="incident">Failed to load incidents</div>`;
+    state.incidents = await res.json();
+    renderIncidents(state.incidents);
+    renderGlobalStatus();
+    renderServices();
+  } catch {
+    state.incidents = [];
   }
 }
-
-function renderIncidents(list) {
-  const box = document.getElementById("incidents-list");
-
-  if (!list.length) {
-    box.innerHTML = `<div class="incident">No incidents reported 🎉</div>`;
-    return;
-  }
-
-  box.innerHTML = list.map(i => `
-    <div class="incident">
-      <div class="incident-title">
-        ${i.title}
-      </div>
-      <div class="incident-meta">
-        ${i.service.toUpperCase()} • ${i.status.toUpperCase()}
-      </div>
-      <div class="incident-meta">
-        Started: ${new Date(i.startedAt).toLocaleString()}
-        ${i.resolvedAt
-          ? `<br>Resolved: ${new Date(i.resolvedAt).toLocaleString()}`
-          : ""}
-      </div>
-    </div>
-  `).join("");
-}
-</script>
-  
-  <script>
-  
-  console.log('%c░██████╗████████╗░█████╗░██████╗░██╗\n██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║\n╚█████╗░░░░██║░░░██║░░██║██████╔╝██║\n░╚═══██╗░░░██║░░░██║░░██║██╔═══╝░╚═╝\n██████╔╝░░░██║░░░╚█████╔╝██║░░░░░██╗\n╚═════╝░░░░╚═╝░░░░╚════╝░╚═╝░░░░░╚═╝', 'color: red; font-weight: bold;');
-
-  function animateClickCard(el) {
-    el.classList.remove('spin');         
-    void el.offsetWidth;        
-    el.classList.add('spin');
-    setTimeout(() => el.classList.remove('spin'), 600);
-  }
   </script>
 
-<script>
-        document.addEventListener("contextmenu", e => e.preventDefault());
-
-        document.addEventListener("keydown", e => {
-          if (
-            e.key === "F12" ||
-            (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key)) ||
-            (e.ctrlKey && e.key === "U")
-          ) {
-            e.preventDefault();
-          }
-        });
-
-        console.log('%c░██████╗████████╗░█████╗░██████╗░██╗\n██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║\n╚█████╗░░░░██║░░░██║░░██║██████╔╝██║\n░╚═══██╗░░░██║░░░██║░░██║██╔═══╝░╚═╝\n██████╔╝░░░██║░░░╚█████╔╝██║░░░░░██╗\n╚═════╝░░░░╚═╝░░░░╚════╝░╚═╝░░░░░╚═╝', 'color: red; font-weight: bold;');
-</script>
-
+  <script>
+          document.addEventListener("contextmenu", e => e.preventDefault());
+  
+          document.addEventListener("keydown", e => {
+            if (
+              e.key === "F12" ||
+              (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key)) ||
+              (e.ctrlKey && e.key === "U")
+            ) {
+              e.preventDefault();
+            }
+          });
+  
+          console.log('%c░██████╗████████╗░█████╗░██████╗░██╗\n██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║\n╚█████╗░░░░██║░░░██║░░██║██████╔╝██║\n░╚═══██╗░░░██║░░░██║░░██║██╔═══╝░╚═╝\n██████╔╝░░░██║░░░╚█████╔╝██║░░░░░██╗\n╚═════╝░░░░╚═╝░░░░╚════╝░╚═╝░░░░░╚═╝', 'color: red; font-weight: bold;');
+  </script>
+  
 </body>
 
 </html>
