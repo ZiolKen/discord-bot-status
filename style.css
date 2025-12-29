@@ -1,158 +1,123 @@
 :root {
-  --bg: #0b1220;
+  --bg: #0b0e14;
   --card: #111827;
   --border: #1f2937;
   --text: #e5e7eb;
   --muted: #9ca3af;
-
   --green: #22c55e;
   --yellow: #facc15;
   --red: #ef4444;
-  --blue: #3b82f6;
 }
 
-* {
-  box-sizing: border-box;
-  font-family: 'Inter', sans-serif;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
+  font-family: Inter, system-ui;
   background: var(--bg);
   color: var(--text);
 }
 
+.container {
+  width: min(1100px, 92%);
+  margin: auto;
+}
+
 header {
-  height: 56px;
+  padding: 32px 0;
 }
 
-h2 {
-  margin: 0 0 12px;
-  font-size: 16px;
+h1 { margin: 0 0 12px; }
+
+.status-banner {
+  padding: 14px;
+  border-radius: 12px;
   font-weight: 600;
+  text-align: center;
 }
+.status-banner.ok { background: #052e1b; color: var(--green); }
+.status-banner.degraded { background: #2e2505; color: var(--yellow); }
+.status-banner.down { background: #2e0505; color: var(--red); }
+.status-banner.loading { background: #111; color: var(--muted); }
 
-.status-header {
-  max-width: 1100px;
-  margin: 24px auto;
-  padding: 0 16px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.status-indicator {
-  padding: 12px 18px;
-  border-radius: 999px;
-  font-weight: 600;
-  background: var(--card);
-  border: 1px solid var(--border);
-}
-
-.status-indicator.online {
-  color: var(--green);
-}
-
-.status-indicator.offline {
-  color: var(--red);
-}
-
-.invite-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  padding: 10px 14px;
-  border-radius: 10px;
-  color: var(--text);
-  text-decoration: none;
-}
-
-.discord-logo {
-  width: 20px;
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
+  gap: 16px;
+  margin: 30px 0;
 }
 
 .card {
-  max-width: 1100px;
-  margin: 0 auto 24px;
-  padding: 16px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 20px;
+}
+
+.card span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.card strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 20px;
+}
+
+/* SERVICES */
+.service-card {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 16px;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.service-card:last-child { border-bottom: none; }
+
+.service-name {
+  font-weight: 600;
 }
 
-.label {
+.service-meta {
   font-size: 12px;
   color: var(--muted);
 }
 
-.value {
-  font-size: 18px;
+.service-status {
   font-weight: 600;
 }
+.service-status.online { color: var(--green); }
+.service-status.degraded { color: var(--yellow); }
+.service-status.offline { color: var(--red); }
 
-.services, .tech, .chart-container, .incidents {
-  max-width: 1100px;
-  margin: 0 auto 24px;
-  padding: 16px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-}
-
-.service {
-  display: flex;
-  justify-content: space-between;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--border);
-}
-
-.service:last-child {
-  border-bottom: none;
-}
-
-.status-dot {
-  font-weight: 600;
-}
-
-.status-dot.online {
-  color: var(--green);
-}
-
-.status-dot.degraded {
-  color: var(--yellow);
-}
-
-.status-dot.offline {
-  color: var(--red);
-}
-
+/* INCIDENTS */
 .incident {
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
+  border-left: 4px solid;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+.incident.active {
+  border-color: var(--red);
+  background: #160b0b;
+}
+.incident.resolved {
+  border-color: var(--green);
+  background: #0b160f;
 }
 
-.incident:last-child {
-  border-bottom: none;
-}
-
-.incident-title {
-  font-weight: 600;
-}
-
-.incident-meta {
-  font-size: 12px;
+.meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
   color: var(--muted);
-  margin-top: 4px;
 }
 
 footer {
   text-align: center;
+  padding: 30px 0;
+  font-size: 13px;
   color: var(--muted);
-  font-size: 12px;
-  padding: 24px 0;
 }
