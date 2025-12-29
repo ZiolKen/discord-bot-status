@@ -91,6 +91,13 @@
     </div>
   </div>
 
+<div class="incidents">
+  <h2>🚨 Incidents History</h2>
+  <div id="incidents-list">
+    Loading incidents...
+  </div>
+</div>
+
   <div class="chart-container">
     <h2>📈 Ping History</h2>
     <canvas id="pingChart" height="100"></canvas>
@@ -108,97 +115,164 @@
     © 2025 ZiolKen | Bot Status
   </footer>
   
-  <script>
-      document.addEventListener("DOMContentLoaded", () => {
-      const pingChart = new Chart(document.getElementById('pingChart'), {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [{
-            label: 'Ping (ms)',
-            data: [],
-            borderColor: '#58a6ff',
-            backgroundColor: 'rgba(88, 166, 255, 0.2)',
-            tension: 0.3,
-            fill: true
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: { display: false },
-            y: { beginAtZero: true }
-          }
-        }
-      });
+<script>
+const STATUS_URL = "https://discord-bot-us.onrender.com/status";
+const INCIDENTS_URL = "https://discord-bot-us.onrender.com/incidents";
 
-      async function loadStatus() {
-        const banner = document.getElementById("status-banner");
-        const spinner = document.getElementById("spinner");
-        if (spinner) spinner.style.display = "inline-block";
+let pingChart;
 
-        try {
-          const res = await fetch("https://discord-bot-us.onrender.com/status");
-          const data = await res.json();
+document.addEventListener("DOMContentLoaded", () => {
+  initChart();
 
-          if (spinner) spinner.style.display = "none";
-          banner.innerHTML = data.status === "online"
-            ? "🟢 Bot Online"
-            : "🔴 Bot Offline";
-          banner.className = `status-indicator ${data.status === "online" ? "online" : "offline"}`;
+  loadStatus();
+  loadIncidents();
 
-          document.getElementById("host").textContent = "🟢 Operational";
-          document.getElementById("ping").textContent = `${data.ping} ms`;
-          document.getElementById("uptime").textContent = data.uptime;
-          document.getElementById("guilds").textContent = data.guilds;
-          document.getElementById("users").textContent = data.users;
-          document.getElementById("updated").textContent = new Date(data.updated).toLocaleString();
-          document.getElementById("boot").textContent = new Date(Date.now() - parseUptime(data.uptime)).toLocaleString();
+  setInterval(loadStatus, 3000);
+  setInterval(loadIncidents, 60000);
+});
+</script>
 
-          document.getElementById("api-status").textContent = "● Online";
-          document.getElementById("api-status").className = "online-dot";
+<script>
+async function loadStatus() {
+  try {
+    const res = await fetch(STATUS_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
 
-          const now = new Date().toLocaleTimeString();
-          if (pingChart.data.labels.length >= 30) {
-            pingChart.data.labels.shift();
-            pingChart.data.datasets[0].data.shift();
-          }
-          pingChart.data.labels.push(now);
-          pingChart.data.datasets[0].data.push(data.ping);
-          pingChart.update();
-        } catch (err) {
-          if (spinner) spinner.style.display = "none";
-          banner.textContent = "🔴 Bot Offline";
-          banner.className = "status-indicator offline";
-          document.getElementById("host").textContent = "⚠️ Down";
-          document.getElementById("ping").textContent = "-- ms";
-          document.getElementById("uptime").textContent = "--";
-          document.getElementById("guilds").textContent = "--";
-          document.getElementById("users").textContent = "--";
-          document.getElementById("updated").textContent = "-h -m -s";
-          document.getElementById("boot").textContent = "-h -m -s";
-          document.getElementById("api-status").textContent = "● Offline";
-          document.getElementById("api-status").className = "offline-dot";
-          console.error("Failed to fetch status:", err);
-        }
+    const d = await res.json();
+
+    renderBanner(d.status === "online");
+    renderStats(d);
+    renderServices(d.services, d.ping);
+    updateChart(d.ping);
+
+  } catch (e) {
+    console.error("STATUS ERROR", e);
+    renderBanner(false);
+  }
+}
+
+function renderBanner(online) {
+  const el = document.getElementById("status-banner");
+  el.textContent = online
+    ? "All Systems Operational"
+    : "Partial System Outage";
+  el.className = `status-indicator ${online ? "online" : "offline"}`;
+}
+
+function renderStats(d) {
+  document.getElementById("ping").textContent = `${Math.round(d.ping)} ms`;
+  document.getElementById("uptime").textContent = d.uptime;
+  document.getElementById("guilds").textContent = d.guilds;
+  document.getElementById("users").textContent = d.users;
+  document.getElementById("updated").textContent =
+    new Date(d.updated).toLocaleString();
+}
+
+function renderServices(services, ping) {
+  const map = {
+    api: "API Endpoint",
+    gateway: "Discord Gateway",
+    commands: "Command System"
+  };
+
+  const box = document.querySelector(".services");
+  box.innerHTML = `<h2>🔧 Services</h2>` +
+    Object.entries(map).map(([k, name]) => {
+      let state = services[k];
+      if (state === "online" && ping > 300) state = "degraded";
+
+      return `
+        <div class="service">
+          <span>${name}</span>
+          <span class="status-dot ${state}">
+            ${state === "online"
+              ? "Operational"
+              : state === "degraded"
+              ? "Degraded Performance"
+              : "Offline"}
+          </span>
+        </div>`;
+    }).join("");
+}
+</script>
+
+<script>
+function initChart() {
+  pingChart = new Chart(document.getElementById("pingChart"), {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [{
+        data: [],
+        borderColor: "#3b82f6",
+        tension: 0.35,
+        fill: false
+      }]
+    },
+    options: {
+      plugins: { legend: { display: false }},
+      scales: {
+        x: { display: false },
+        y: { beginAtZero: true }
       }
+    }
+  });
+}
 
-      function parseUptime(str) {
-        const parts = str.split(" ");
-        let ms = 0;
-        for (const part of parts) {
-          const [val, unit] = part.match(/\d+|\D+/g);
-          if (unit === "h") ms += +val * 3600000;
-          if (unit === "m") ms += +val * 60000;
-          if (unit === "s") ms += +val * 1000;
-        }
-        return ms;
-      }
+function updateChart(ping) {
+  const t = new Date().toLocaleTimeString();
+  if (pingChart.data.labels.length >= 40) {
+    pingChart.data.labels.shift();
+    pingChart.data.datasets[0].data.shift();
+  }
+  pingChart.data.labels.push(t);
+  pingChart.data.datasets[0].data.push(Math.round(ping));
+  pingChart.update();
+}
+</script>
 
-      loadStatus();
-      setInterval(loadStatus, 1000);
-    });
-  </script>
+<script>
+async function loadIncidents() {
+  try {
+    const res = await fetch(INCIDENTS_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error(res.status);
+
+    const list = await res.json();
+    renderIncidents(list);
+
+  } catch (e) {
+    console.error("INCIDENTS ERROR", e);
+    document.getElementById("incidents-list").innerHTML =
+      `<div class="incident">Failed to load incidents</div>`;
+  }
+}
+
+function renderIncidents(list) {
+  const box = document.getElementById("incidents-list");
+
+  if (!list.length) {
+    box.innerHTML = `<div class="incident">No incidents reported 🎉</div>`;
+    return;
+  }
+
+  box.innerHTML = list.map(i => `
+    <div class="incident">
+      <div class="incident-title">
+        ${i.title}
+      </div>
+      <div class="incident-meta">
+        ${i.service.toUpperCase()} • ${i.status.toUpperCase()}
+      </div>
+      <div class="incident-meta">
+        Started: ${new Date(i.startedAt).toLocaleString()}
+        ${i.resolvedAt
+          ? `<br>Resolved: ${new Date(i.resolvedAt).toLocaleString()}`
+          : ""}
+      </div>
+    </div>
+  `).join("");
+}
+</script>
   
   <script>
   
