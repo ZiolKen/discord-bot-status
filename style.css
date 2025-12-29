@@ -36,6 +36,10 @@ header { padding:32px 0; }
     padding: 10px;
 }
 
+.Header img {
+  max-width: 360px;
+}
+
 /* GLOBAL STATUS */
 .status-banner {
   display: flex;
