@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 
 <head>
@@ -33,237 +32,58 @@
 </head>
 
 <body>
-  <header></header>
-  <div class="status-header">
-    <div id="status-banner" class="status-indicator">
-      <div class="spinner" id="spinner"></div>
-    </div>
-    <a href="https://discord.com/oauth2/authorize?client_id=1398238289500307578&scope=bot&permissions=8" 
-      target="_blank" 
-      class="invite-card">
-    <img src="assets/discord.png"
-         alt="Discord"
-         class="discord-logo" />
-    Invite Bot
-  </a>
+<header class="container">
+  <h1>🤖 Bot Status</h1>
+  <div id="global-status" class="status-banner loading">
+    Checking system status…
   </div>
+</header>
 
-  <div class="card" id="status-card">
-    <div>
-      <div class="label">Host Service</div>
-      <div class="value" id="host">--</div>
-    </div>
-    <div>
-      <div class="label">Ping</div>
-      <div class="value" id="ping">--</div>
-    </div>
-    <div>
-      <div class="label">Uptime</div>
-      <div class="value" id="uptime">--</div>
-    </div>
-    <div>
-      <div class="label">Servers</div>
-      <div class="value" id="guilds">--</div>
-    </div>
-    <div>
-      <div class="label">Users</div>
-      <div class="value" id="users">--</div>
-    </div>
-    <div>
-      <div class="label">Last Update</div>
-      <div class="value" id="updated">--</div>
-    </div>
-  </div>
+<main class="container">
 
-  <div class="services">
-    <h2>🔧 Services</h2>
-    <div class="service">
-      <span>Discord Gateway</span>
-      <span class="online-dot">● Online</span>
-    </div>
-    <div class="service">
-      <span>Command System</span>
-      <span class="online-dot">● Online</span>
-    </div>
-    <div class="service">
-      <span>API Endpoint</span>
-      <span class="online-dot" id="api-status">● Online</span>
-    </div>
-  </div>
+  <!-- SUMMARY -->
+  <section class="summary">
+    <div class="card"><span>Ping</span><strong id="ping">--</strong></div>
+    <div class="card"><span>Uptime</span><strong id="uptime">--</strong></div>
+    <div class="card"><span>Servers</span><strong id="guilds">--</strong></div>
+    <div class="card"><span>Users</span><strong id="users">--</strong></div>
+  </section>
 
-  <div class="incidents">
-    <h2>🚨 Incidents History</h2>
-    <div id="incidents-list">
-      Loading incidents...
-    </div>
-  </div>
+  <!-- SERVICES -->
+  <section class="card">
+    <h2>Services</h2>
+    <div id="service-gateway" class="service-card"></div>
+    <div id="service-api" class="service-card"></div>
+    <div id="service-commands" class="service-card"></div>
+  </section>
 
-  <div class="chart-container">
-    <h2>📈 Ping History</h2>
-    <canvas id="pingChart" height="100"></canvas>
-  </div>
+  <!-- INCIDENTS -->
+  <section class="card">
+    <h2>Incidents</h2>
+    <div id="incidents">Loading incidents…</div>
+  </section>
 
-  <div class="tech">
-    <h2>🧠 Technical Info</h2>
-    <div class="service"><span>Bot Version</span><span>1.2.7</span></div>
-    <div class="service"><span>discord.js</span><span>14.13.0</span></div>
-    <div class="service"><span>Node.js</span><span>22.16.0</span></div>
-    <div class="service"><span>Last Boot</span><span id="boot">--</span></div>
-  </div>
+  <!-- CHART -->
+  <section class="card">
+    <h2>Ping History</h2>
+    <canvas id="pingChart" height="90"></canvas>
+  </section>
 
-  <footer>
-    © 2025 ZiolKen | Bot Status
-  </footer>
-  
-  <script>
-const state = {
-  online: false,
-  host: {
-    name: "--",
-    status: "unknown"
-  },
-  services: {},
-  stats: {
-    ping: null,
-    uptime: "--",
-    guilds: 0,
-    users: 0,
-    lastBoot: "--",
-    updated: "--"
-  },
-  incidents: []
-};
-function renderGlobalStatus() {
-  const banner = document.getElementById("status-banner");
+  <!-- META -->
+  <section class="meta">
+    <span>Host: <b id="host">--</b></span>
+    <span>Last boot: <b id="boot">--</b></span>
+    <span>Updated: <b id="updated">--</b></span>
+  </section>
 
-  const hasIncident = state.incidents.length > 0;
-  const allOperational = Object.values(state.services)
-    .every(s => s === "online");
+</main>
 
-  let text = "All Systems Operational";
-  let cls = "online";
+<footer>
+  © 2025 ZiolKen • Status Page
+</footer>
 
-  if (state.host.status === "down") {
-    text = "Major System Outage";
-    cls = "offline";
-  } else if (hasIncident) {
-    text = "Partial System Outage";
-    cls = "degraded";
-  } else if (!allOperational) {
-    text = "Degraded Performance";
-    cls = "degraded";
-  }
+<script src="app.js"></script>
 
-  banner.textContent = text;
-  banner.className = `status-indicator ${cls}`;
-}
-function renderServices() {
-  const map = {
-    api: "API Endpoint",
-    gateway: "Discord Gateway",
-    commands: "Command System"
-  };
-
-  const box = document.querySelector(".services");
-  box.innerHTML = `<h2>🔧 Services</h2>`;
-
-  for (const [key, label] of Object.entries(map)) {
-    let status = state.services[key] || "offline";
-
-    // 🔥 Incident ép service xuống
-    if (state.incidents.some(i => i.service === key)) {
-      status = "offline";
-    }
-
-    box.innerHTML += `
-      <div class="service">
-        <span>${label}</span>
-        <span class="status-dot ${status}">
-          ${status === "online"
-            ? "Operational"
-            : status === "degraded"
-            ? "Degraded Performance"
-            : "Offline"}
-        </span>
-      </div>
-    `;
-  }
-}
-function renderStats() {
-  document.getElementById("host").textContent = state.host.name;
-  document.getElementById("ping").textContent =
-    state.stats.ping != null ? `${Math.round(state.stats.ping)} ms` : "N/A";
-  document.getElementById("uptime").textContent = state.stats.uptime;
-  document.getElementById("guilds").textContent = state.stats.guilds;
-  document.getElementById("users").textContent = state.stats.users;
-  document.getElementById("updated").textContent =
-    new Date(state.stats.updated).toLocaleString();
-  document.getElementById("boot").textContent =
-    new Date(state.stats.lastBoot).toLocaleString();
-}
-async function loadStatus() {
-  try {
-    const res = await fetch(STATUS_URL, { cache: "no-store" });
-    const d = await res.json();
-
-    state.online = d.status === "online";
-
-    state.host = {
-      name: d.host,
-      status: d.hostService
-    };
-
-    state.services = d.services;
-
-    state.stats = {
-      ping: d.ping,
-      uptime: d.uptime,
-      guilds: d.guilds,
-      users: d.users,
-      lastBoot: d.lastBoot,
-      updated: d.updated
-    };
-
-    renderStats();
-    renderServices();
-    renderGlobalStatus();
-    if (d.ping != null) updateChart(d.ping);
-
-  } catch {
-    state.host.status = "down";
-    state.services = {};
-    renderGlobalStatus();
-  }
-}
-async function loadIncidents() {
-  try {
-    const res = await fetch(INCIDENTS_URL, { cache: "no-store" });
-    state.incidents = await res.json();
-    renderIncidents(state.incidents);
-    renderGlobalStatus();
-    renderServices();
-  } catch {
-    state.incidents = [];
-  }
-}
-  </script>
-
-  <script>
-          document.addEventListener("contextmenu", e => e.preventDefault());
-  
-          document.addEventListener("keydown", e => {
-            if (
-              e.key === "F12" ||
-              (e.ctrlKey && e.shiftKey && ["I", "J", "C"].includes(e.key)) ||
-              (e.ctrlKey && e.key === "U")
-            ) {
-              e.preventDefault();
-            }
-          });
-  
-          console.log('%c░██████╗████████╗░█████╗░██████╗░██╗\n██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║\n╚█████╗░░░░██║░░░██║░░██║██████╔╝██║\n░╚═══██╗░░░██║░░░██║░░██║██╔═══╝░╚═╝\n██████╔╝░░░██║░░░╚█████╔╝██║░░░░░██╗\n╚═════╝░░░░╚═╝░░░░╚════╝░╚═╝░░░░░╚═╝', 'color: red; font-weight: bold;');
-  </script>
-  
 </body>
 
 </html>
