@@ -42,12 +42,8 @@ header { padding:32px 0; }
 }
 
 .ibtn {
-  background: var(--green);
-  border: 1px solid var(--border);
-  font-size: 16px;
-  padding: 10px;
-  white-space: nowrap;
-  max-height: 40px;
+  background: transparent;
+  border: 0px solid transparent;
 }
 
 .ibtn img {
