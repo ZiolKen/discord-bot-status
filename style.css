@@ -41,6 +41,14 @@ header { padding:32px 0; }
   max-width: 240px;
 }
 
+.ibtn {
+  
+}
+
+.ibtn img {
+  max-width: 50px;
+}
+
 /* GLOBAL STATUS */
 .status-banner {
   margin-top: 45px;
