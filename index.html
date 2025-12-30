@@ -104,23 +104,6 @@ function normalizeState(state) {
   return "down";
 }
 
-// ===== SUMMARY =====
-document.getElementById("ping").textContent = `${Math.round(s.ping)} ms`;
-document.getElementById("ping-tech").textContent = `${Math.round(s.ping)} ms`;
-document.getElementById("uptime").textContent = s.uptime;
-document.getElementById("guilds").textContent = s.guilds;
-document.getElementById("users").textContent = s.users;
-
-// ===== TECH =====
-document.getElementById("updated").textContent =
-  new Date(s.updated).toLocaleString();
-
-document.getElementById("boot").textContent =
-  new Date(s.lastBoot).toLocaleString();
-
-// ===== CHART =====
-chartPush(s.ping);
-
 const pingHistory = [];
 const MAX = 30;
 
