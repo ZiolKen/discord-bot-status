@@ -146,6 +146,7 @@ header { padding:32px 0; }
 .service-status.online { color:var(--green); }
 .service-status.degraded { color:var(--yellow); }
 .service-status.offline { color:var(--red); }
+.service-status.down { color:var(--red); }
 
 /* INCIDENTS */
 .incident-list {
