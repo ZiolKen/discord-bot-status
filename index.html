@@ -131,6 +131,17 @@ const uptime = s => {
   return t===0?"100%":((s.up/t)*100).toFixed(2)+"%";
 };
 
+function fmtTime(t) {
+  return new Date(t).toLocaleString();
+}
+
+function duration(start, end) {
+  const ms = new Date(end) - new Date(start);
+  const m = Math.floor(ms / 60000);
+  const s = Math.floor((ms % 60000) / 1000);
+  return `${m}m ${s}s`;
+}
+
 /* ===== RENDER ===== */
 function renderService(id, name, state) {
   state==="online"?stats[id].up++:stats[id].down++;
@@ -163,18 +174,46 @@ function renderGlobal(status, incidents) {
 
 function renderIncidents(list) {
   const el = document.getElementById("incidents");
-  if (!list.length) {
-    el.textContent = "No incidents 🎉";
+
+  if (!list || !list.length) {
+    el.innerHTML = `<div class="incident-empty">No incidents 🎉</div>`;
     return;
   }
-  el.innerHTML = "";
-  list.forEach(i=>{
-    el.innerHTML+=`
-      <div class="incident ${i.resolvedAt?"resolved":"active"}">
-        <strong>${i.title}</strong><br>
-        ${i.service} • ${i.resolvedAt?"Resolved":"Investigating"}
-      </div>`;
-  });
+
+  el.innerHTML = `<div class="incident-list"></div>`;
+  const wrap = el.firstChild;
+
+  list
+    .sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt))
+    .forEach(i => {
+      const resolved = i.status === "resolved";
+      const dur = resolved
+        ? duration(i.startedAt, i.resolvedAt)
+        : "Ongoing";
+
+      wrap.innerHTML += `
+        <div class="incident-item ${resolved ? "resolved" : "active"}">
+          <span class="incident-dot"></span>
+
+          <div class="incident-title">
+            ${i.title}
+            <span class="incident-badge ${resolved ? "resolved" : "active"}">
+              ${resolved ? "Resolved" : "Investigating"}
+            </span>
+          </div>
+
+          <div class="incident-meta">
+            Service: <b>${i.service.toUpperCase()}</b>
+          </div>
+
+          <div class="incident-time">
+            Started: ${fmtTime(i.startedAt)}<br>
+            ${resolved ? `Resolved: ${fmtTime(i.resolvedAt)}<br>` : ""}
+            Duration: ${dur}
+          </div>
+        </div>
+      `;
+    });
 }
 
 /* ===== LOAD ===== */
