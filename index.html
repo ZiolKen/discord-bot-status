@@ -98,6 +98,12 @@
 const STATUS_URL = "https://discord-bot-us.onrender.com/status";
 const INCIDENTS_URL = "https://discord-bot-us.onrender.com/incidents";
 
+function normalizeState(state) {
+  if (["online", "operational", "up"].includes(state)) return "online";
+  if (["degraded", "partial"].includes(state)) return "degraded";
+  return "down";
+}
+
 /* ===== CHART ===== */
 const pingHistory = [];
 const MAX = 30;
@@ -143,8 +149,34 @@ function duration(start, end) {
 }
 
 /* ===== RENDER ===== */
+function getDegradedServices(incidents) {
+  const set = new Set();
+
+  incidents.forEach(i => {
+    if (!i.resolvedAt && i.status !== "resolved") {
+      set.add(i.service);
+    }
+  });
+
+  return set;
+}
+
+function applyIncidentState(serviceName, baseState, degradedSet) {
+  if (baseState !== "online") return baseState;
+  return degradedSet.has(serviceName) ? "degraded" : "online";
+}
+
 function renderService(id, name, state) {
-  state==="online"?stats[id].up++:stats[id].down++;
+  state === "online"
+    ? stats[id].up++
+    : stats[id].down++;
+
+  const label =
+    state === "online"
+      ? "• Operational"
+      : state === "degraded"
+      ? "• Degraded"
+      : "• Down";
 
   document.getElementById(`service-${id}`).innerHTML = `
     <div>
@@ -152,7 +184,7 @@ function renderService(id, name, state) {
       <div class="service-meta">Uptime: ${uptime(stats[id])}</div>
     </div>
     <div class="service-status ${state}">
-      ${state==="online"?"• Operational":"• Down"}
+      ${label}
     </div>`;
 }
 
@@ -219,37 +251,58 @@ function renderIncidents(list) {
 /* ===== LOAD ===== */
 async function load() {
   try {
-    const [s,i] = await Promise.all([
-      fetch(STATUS_URL).then(r=>r.json()),
-      fetch(INCIDENTS_URL).then(r=>r.json())
+    const [s, incidents] = await Promise.all([
+      fetchWithTimeout(STATUS_URL).then(r => r.json()),
+      fetchWithTimeout(INCIDENTS_URL).then(r => r.json())
     ]);
 
-    document.getElementById("ping").textContent = `${Math.round(s.ping)} ms`;
-    document.getElementById("ping-tech").textContent = `${Math.round(s.ping)} ms`;
-    document.getElementById("uptime").textContent = s.uptime;
-    document.getElementById("guilds").textContent = s.guilds;
-    document.getElementById("users").textContent = s.users;
+    const degradedSet = getDegradedServices(incidents);
 
-    document.getElementById("updated").textContent =
-      new Date(s.updated).toLocaleString();
-    document.getElementById("boot").textContent =
-      new Date(s.lastBoot).toLocaleString();
-      
-    const hostState =
-      s.hostService === "operational" ? "online" : "down";
-    
+    const hostState = applyIncidentState(
+      "host",
+      normalizeState(s.hostService),
+      degradedSet
+    );
+
+    const gatewayState = applyIncidentState(
+      "gateway",
+      normalizeState(s.services.gateway),
+      degradedSet
+    );
+
+    const apiState = applyIncidentState(
+      "api",
+      normalizeState(s.services.api),
+      degradedSet
+    );
+
+    const commandState = applyIncidentState(
+      "commands",
+      normalizeState(s.services.commands),
+      degradedSet
+    );
+
     renderService("host", "Host System", hostState);
-    renderService("gateway","Discord Gateway",s.services.gateway);
-    renderService("api","API Endpoint",s.services.api);
-    renderService("commands","Command System",s.services.commands);
+    renderService("gateway", "Discord Gateway", gatewayState);
+    renderService("api", "API Endpoint", apiState);
+    renderService("commands", "Command System", commandState);
 
-    renderIncidents(i);
-    renderGlobal(s,i);
-    chartPush(s.ping);
+    renderIncidents(incidents);
+    renderGlobal(
+      {
+        hostService: hostState,
+        services: {
+          gateway: gatewayState,
+          api: apiState,
+          commands: commandState
+        }
+      },
+      incidents
+    );
 
   } catch {
-    const box=document.getElementById("global-status");
-    box.className="status-banner down";
+    const box = document.getElementById("global-status");
+    box.className = "status-banner down";
     document.getElementById("global-text").textContent =
       "Status service unreachable";
   }
