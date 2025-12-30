@@ -123,6 +123,10 @@ function chartPush(p) {
   chart.update();
 }
 
+function isOfflineStatus(s) {
+  return s && s.status === "offline";
+}
+
 /* ===== UPTIME ===== */
 const stats = {
   host:{up:0,down:0},
@@ -216,6 +220,21 @@ function renderGlobal(status, incidents) {
   text.textContent = msg;
 }
 
+function renderOffline() {
+  ["ping","ping-tech","uptime","guilds","users","updated","boot"]
+    .forEach(id => document.getElementById(id).textContent = "--");
+
+  renderService("host", "Host System", "down");
+  renderService("gateway", "Discord Gateway", "down");
+  renderService("api", "API Endpoint", "down");
+  renderService("commands", "Command System", "down");
+
+  const box = document.getElementById("global-status");
+  box.className = "status-banner down";
+  document.getElementById("global-text").textContent =
+    "Major System Outage";
+}
+
 function renderIncidents(list) {
   const el = document.getElementById("incidents");
 
@@ -268,6 +287,12 @@ async function load() {
       fetchWithTimeout(INCIDENTS_URL).then(r => r.json())
     ]);
 
+    if (isOfflineStatus(s)) {
+      renderOffline();
+      renderIncidents(incidents);
+      return;
+    }
+
     document.getElementById("ping").textContent = `${Math.round(s.ping)} ms`;
     document.getElementById("ping-tech").textContent = `${Math.round(s.ping)} ms`;
     document.getElementById("uptime").textContent = s.uptime;
@@ -315,10 +340,7 @@ async function load() {
 
     renderIncidents(incidents);
 
-    renderGlobal(
-      { hostService: hostState },
-      incidents
-    );
+    renderGlobal({ hostService: hostState }, incidents);
 
   } catch (e) {
     console.error(e);
