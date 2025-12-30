@@ -58,7 +58,7 @@ header { padding:32px 0; }
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 15px;
   padding: 18px;
   border-radius: 12px;
   font-weight: 600;
@@ -72,6 +72,7 @@ header { padding:32px 0; }
 .pulse {
   width: 25px;
   height: 25px;
+  margin-top: 18px;
   border-radius: 50%;
   position: relative;
 }
