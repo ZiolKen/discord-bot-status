@@ -148,6 +148,14 @@ function duration(start, end) {
   return `${m}m ${s}s`;
 }
 
+function fetchWithTimeout(url, timeout = 1000) {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+
+  return fetch(url, { signal: controller.signal })
+    .finally(() => clearTimeout(id));
+}
+
 /* ===== RENDER ===== */
 function getDegradedServices(incidents) {
   const set = new Set();
@@ -195,9 +203,14 @@ function renderGlobal(status, incidents) {
   let cls="ok", msg="All Systems Operational";
 
   if (status.hostService === "down") {
-    cls="down"; msg="Major System Outage";
-  } else if (incidents.some(i=>!i.resolvedAt)) {
-    cls="degraded"; msg="Partial System Outage";
+    cls="down";
+    msg="Major System Outage";
+  } else if (
+    status.hostService === "degraded" ||
+    incidents.some(i => !i.resolvedAt)
+  ) {
+    cls="degraded";
+    msg="Partial System Outage";
   }
 
   box.className = `status-banner ${cls}`;
