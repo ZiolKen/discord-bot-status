@@ -239,7 +239,7 @@ function renderIncidents(list) {
   const el = document.getElementById("incidents");
 
   if (!list || !list.length) {
-    el.innerHTML = `<div class="incident-empty">No incidents 🎉</div>`;
+    el.innerHTML = `<div class="incident-empty">No incidents</div>`;
     return;
   }
 
@@ -261,7 +261,7 @@ function renderIncidents(list) {
           <div class="incident-title">
             ${i.title}
             <span class="incident-badge ${resolved ? "resolved" : "active"}">
-              ${resolved ? "Resolved" : "Investigating"}
+              ${resolved ? "Resolved" : "Resolving"}
             </span>
           </div>
 
