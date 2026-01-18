@@ -1,9 +1,14 @@
-# Discord Bot Status
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/ZiolKen/discord-bot-status)
+<br>
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/ZiolKen/discord-bot-status/main/assets/ico.png" alt="Project Logo" width="50%" />
 </p>
+
+# <p align="center">Discord Bot Status</p>
+
+<div>
+  <img style="width: 100%;" src="https://capsule-render.vercel.app/api?type=waving&height=110&section=header&fontSize=60&fontColor=FFFFFF&fontAlign=50&fontAlignY=40&descSize=18&descAlign=50&descAlignY=70&theme=cobalt" />
+</div>
 
 A sleek, real-time status page for a Discord bot, providing current system information, service status, and incident reports.
 
