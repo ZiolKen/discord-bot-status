@@ -207,11 +207,11 @@ function renderGlobal(status, incidents) {
 
   let cls="ok", msg="All Systems Operational";
 
-  if (status.hostService === "down") {
+  if (status.status === "down") {
     cls="down";
     msg="Major System Outage";
   } else if (
-    status.hostService === "degraded" ||
+    status.status === "degraded" ||
     incidents.some(i => !i.resolvedAt)
   ) {
     cls="degraded";
