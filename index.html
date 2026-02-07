@@ -395,25 +395,31 @@
         type: "line",
         data: {
           labels: [],
-          datasets: [{
-            data: [],
-            borderColor: gradient,
-            borderWidth: 2,
-            tension: 1,
-            pointRadius: 0,
-            fill: true,
-            backgroundColor: "rgba(124,92,255,0.10)",
-          }],
+          datasets: [
+            {
+              data: [],
+              borderWidth: 2,
+              tension: 0.5,
+              pointRadius: 0,
+              fill: true,
+              backgroundColor: "rgba(124,92,255,0.10)",
+              borderColor: gradient,
+            },
+          ],
         },
         options: {
           responsive: true,
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: false },
+          },
           scales: {
-            x: { display: false },
-            y: { display: false,
-              suggestedMax: 300 }
+            x: { display: false, grid: { display: false } },
+            y: { display: false, grid: { display: false }, suggestedMax: 300 },
           },
           animation: { duration: 350 },
+          elements: { line: { capBezierPoints: true } },
         },
       });
     }
