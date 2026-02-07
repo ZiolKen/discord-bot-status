@@ -275,7 +275,663 @@
   </footer>
 
   <script type="module">
-
+    const DEFAULT_CONFIG = {
+      STATUS_URL: "https://discord-bot-us.onrender.com/status",
+      INCIDENTS_URL: "https://discord-bot-us.onrender.com/incidents",
+      REFRESH_MS: 5000,
+      TIMEOUT_MS: 1200,
+      MAX_POINTS: 40,
+    };
+    
+    const CONFIG = Object.assign({}, DEFAULT_CONFIG, window.__STATUS_CONFIG__ || {});
+    
+    const $ = (id) => document.getElementById(id);
+    
+    const els = {
+      globalBox: $("global-status"),
+      globalText: $("global-text"),
+    
+      ping: $("ping"),
+      uptime: $("uptime"),
+      guilds: $("guilds"),
+      users: $("users"),
+    
+      updated: $("updated"),
+      boot: $("boot"),
+      pingTech: $("ping-tech"),
+    
+      svcGateway: $("service-gateway"),
+      svcApi: $("service-api"),
+      svcCommands: $("service-commands"),
+    
+      incidentBar: $("incidentBar"),
+      incidentPct: $("incidentPct"),
+      incidentSub: $("incidentSub"),
+      incidentLiveDot: $("incidentLiveDot"),
+      incidentPopover: $("incidentPopover"),
+      ipDate: $("ipDate"),
+      ipScore: $("ipScore"),
+      ipBadge: $("ipBadge"),
+      ipMeta: $("ipMeta"),
+      ipList: $("ipList"),
+      ipClose: $("ipClose"),
+    
+    
+      endpoint: $("endpoint"),
+      refresh: $("refresh"),
+      year: $("year"),
+    };
+    
+    if (els.endpoint) els.endpoint.textContent = new URL(CONFIG.STATUS_URL).pathname || "/status";
+    if (els.refresh) els.refresh.textContent = `${Math.round(CONFIG.REFRESH_MS / 1000)}s`;
+    if (els.year) els.year.textContent = String(new Date().getFullYear());
+    
+    function normalizeState(state) {
+      if (!state) return "down";
+      if (["online", "operational", "up"].includes(state)) return "online";
+      if (["degraded", "partial"].includes(state)) return "degraded";
+      return "down";
+    }
+    
+    function isOfflineStatus(payload) {
+      return payload && payload.status === "offline";
+    }
+    
+    function fmtTime(t) {
+      try {
+        return new Date(t).toLocaleString();
+      } catch {
+        return String(t ?? "");
+      }
+    }
+    
+    function duration(start, end) {
+      const ms = new Date(end) - new Date(start);
+      if (!Number.isFinite(ms)) return "—";
+      const m = Math.floor(ms / 60000);
+      const s = Math.floor((ms % 60000) / 1000);
+      return `${m}m ${s}s`;
+    }
+    
+    function fetchWithTimeout(url, timeout = CONFIG.TIMEOUT_MS) {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+    }
+    
+    function setText(el, text) {
+      if (!el) return;
+      el.classList.remove("skeleton");
+      el.textContent = text;
+    }
+    
+    function setGlobal(state, message) {
+      if (!els.globalBox || !els.globalText) return;
+      els.globalBox.className = `status-pill ${state}`;
+      els.globalText.textContent = message;
+    }
+    
+    function setGlobalLoading() {
+      if (!els.globalBox || !els.globalText) return;
+      els.globalBox.className = "status-pill is-loading";
+      els.globalText.textContent = "Checking system status…";
+    }
+    
+    const pingHistory = [];
+    let chart;
+    
+    function createChart() {
+      const canvas = $("pingChart");
+      if (!canvas || !window.Chart) return;
+    
+      const ctx = canvas.getContext("2d");
+      const gradient = ctx.createLinearGradient(0, 0, canvas.width, 0);
+      gradient.addColorStop(0, "rgba(124,92,255,0.95)");
+      gradient.addColorStop(1, "rgba(53,208,127,0.9)");
+    
+      chart = new Chart(canvas, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [{
+            data: [],
+            borderColor: gradient,
+            borderWidth: 2,
+            tension: 0.35,
+            pointRadius: 0,
+            fill: true,
+            backgroundColor: "rgba(124,92,255,0.10)",
+          }],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false }, tooltip: { enabled: false } },
+          scales: {
+            x: { display: false },
+            y: {
+              display: false,
+              suggestedMin: 0,
+              suggestedMax: 600,
+            },
+          },
+          animation: { duration: 350 },
+        },
+      });
+    }
+    
+    function chartPush(p) {
+      if (!Number.isFinite(p)) return;
+    
+      if (pingHistory.length >= CONFIG.MAX_POINTS) pingHistory.shift();
+      pingHistory.push(p);
+    
+      if (!chart) return;
+    
+      chart.data.labels = pingHistory.map((_, i) => i + 1);
+      chart.data.datasets[0].data = pingHistory;
+      chart.update();
+    }
+    
+    function avgPing() {
+      if (!pingHistory.length) return null;
+      const sum = pingHistory.reduce((a, b) => a + b, 0);
+      return sum / pingHistory.length;
+    }
+    
+    const stats = {
+      gateway: { up: 0, down: 0 },
+      api: { up: 0, down: 0 },
+      commands: { up: 0, down: 0 },
+    };
+    
+    const uptimePct = (s) => {
+      const t = s.up + s.down;
+      return t === 0 ? "100%" : `${((s.up / t) * 100).toFixed(2)}%`;
+    };
+    
+    function getDegradedServices(incidents) {
+      const set = new Set();
+      (incidents || []).forEach((i) => {
+        if (!i) return;
+        const resolved = i.status === "resolved" || Boolean(i.resolvedAt);
+        if (!resolved) set.add(String(i.service || "").toLowerCase());
+      });
+      return set;
+    }
+    
+    function applyIncidentState(serviceName, baseState, degradedSet) {
+      if (baseState !== "online") return baseState;
+      return degradedSet.has(String(serviceName).toLowerCase()) ? "degraded" : "online";
+    }
+    
+    function renderService(el, id, name, state) {
+      if (!el) return;
+    
+      if (state === "online") stats[id].up++;
+      else stats[id].down++;
+    
+      const label =
+        state === "online" ? "Operational" :
+        state === "degraded" ? "Degraded" : "Down";
+    
+      el.innerHTML = `
+        <div class="row">
+          <div>
+            <div class="service-name">${name}</div>
+            <div class="service-meta">Uptime (session): ${uptimePct(stats[id])}</div>
+          </div>
+          <div class="service-status ${state}">
+            <span class="s-dot" aria-hidden="true"></span>
+            ${label}
+          </div>
+        </div>
+      `;
+    }
+    
+    
+    const DAY_MS = 24 * 60 * 60 * 1000;
+    
+    function dateKeyLocal(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    }
+    
+    function startOfLocalDay(d) {
+      const x = new Date(d);
+      x.setHours(0, 0, 0, 0);
+      return x;
+    }
+    
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+    
+    function msToHuman(ms) {
+      const s = Math.max(0, Math.floor(ms / 1000));
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (h > 0) return `${h}h ${m}m`;
+      if (m > 0) return `${m}m ${sec}s`;
+      return `${sec}s`;
+    }
+    
+    function unionDuration(intervals) {
+      if (!intervals || intervals.length === 0) return 0;
+      intervals.sort((a, b) => a[0] - b[0]);
+    
+      let total = 0;
+      let [cs, ce] = intervals[0];
+    
+      for (let i = 1; i < intervals.length; i++) {
+        const [s, e] = intervals[i];
+        if (s <= ce) ce = Math.max(ce, e);
+        else {
+          total += ce - cs;
+          cs = s;
+          ce = e;
+        }
+      }
+      total += ce - cs;
+      return total;
+    }
+    
+    function classifyDay(downtimeMs, availabilityPct) {
+      if (!Number.isFinite(downtimeMs) || !Number.isFinite(availabilityPct)) return "unknown";
+      if (downtimeMs <= 0) return "ok";
+    
+      if (availabilityPct < 80 || downtimeMs >= 6 * 60 * 60 * 1000) return "bad";
+      return "warn";
+    }
+    
+    function classifyOverall(overallAvailabilityPct) {
+      if (!Number.isFinite(overallAvailabilityPct)) return "is-unknown";
+      if (overallAvailabilityPct >= 97) return "is-ok";
+      if (overallAvailabilityPct >= 95) return "is-warn";
+      return "is-bad";
+    }
+    
+    function stateToPillClass(state) {
+      if (state === "ok") return "is-ok";
+      if (state === "warn") return "is-warn";
+      if (state === "bad") return "is-bad";
+      return "is-unknown";
+    }
+    
+    function stateToDotClass(state) {
+      if (state === "ok") return "is-ok";
+      if (state === "warn") return "is-warn";
+      if (state === "bad") return "is-bad";
+      return "";
+    }
+    
+    function labelForState(state) {
+      if (state === "ok") return "Operational";
+      if (state === "warn") return "Partial Error";
+      if (state === "bad") return "Major Error";
+      return "Unknown";
+    }
+    
+    function buildIncidentTimeline(incidents, days = 30) {
+      const now = new Date();
+      const todayStart = startOfLocalDay(now);
+    
+      const buckets = [];
+      for (let i = days - 1; i >= 0; i--) {
+        const dayStart = new Date(todayStart.getTime() - i * DAY_MS);
+        const dayEnd = new Date(dayStart.getTime() + DAY_MS);
+        buckets.push({
+          key: dateKeyLocal(dayStart),
+          dayStart,
+          dayEnd,
+          downtimeMs: 0,
+          availability: 100,
+          state: "ok",
+          items: [],
+        });
+      }
+    
+      const parsed = (Array.isArray(incidents) ? incidents : []).map((i) => {
+        const s = new Date(i.startedAt);
+        const e = i.resolvedAt ? new Date(i.resolvedAt) : now;
+        return { ...i, _s: s, _e: e };
+      });
+    
+      for (const d of buckets) {
+        const intervals = [];
+        const items = [];
+    
+        for (const it of parsed) {
+          const s = it._s;
+          const e = it._e;
+          if (!(s instanceof Date) || isNaN(s)) continue;
+          const ss = s.getTime();
+          const ee = (e instanceof Date && !isNaN(e)) ? e.getTime() : now.getTime();
+    
+          const os = Math.max(d.dayStart.getTime(), ss);
+          const oe = Math.min(d.dayEnd.getTime(), ee);
+    
+          if (oe > os) {
+            intervals.push([os, oe]);
+            items.push(it);
+          }
+        }
+    
+        d.downtimeMs = unionDuration(intervals);
+        d.availability = (1 - d.downtimeMs / DAY_MS) * 100;
+        d.items = items.sort((a, b) => new Date(a.startedAt) - new Date(b.startedAt));
+        d.state = classifyDay(d.downtimeMs, d.availability);
+      }
+    
+      return buckets;
+    }
+    
+    function renderIncidents(list) {
+      const bar = els.incidentBar;
+      const pctEl = els.incidentPct;
+    
+      if (!bar || !pctEl) return;
+    
+      closeIncidentPopover();
+    
+      if (!Array.isArray(list)) {
+        const today = startOfLocalDay(new Date());
+        const days = [];
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(today.getTime() - i * DAY_MS);
+          days.push({ key: dateKeyLocal(d), availability: NaN, downtimeMs: NaN, state: "unknown", items: [] });
+        }
+    
+        bar.innerHTML = days.map((d, idx) => {
+          const isToday = idx === days.length - 1;
+          return `<button type="button" class="inc-pill is-unknown${isToday ? " is-today" : ""}" data-idx="${idx}" aria-label="${d.key}: Unknown" title="${d.key} • Unknown"></button>`;
+        }).join("");
+    
+        pctEl.textContent = "—";
+        pctEl.className = "incidents-pct is-unknown";
+        if (els.incidentSub) els.incidentSub.textContent = `Recent ${days.length} day(s) uptime rate.`;
+    
+        if (els.incidentLiveDot) els.incidentLiveDot.className = "incident-live-dot";
+    
+        wireIncidentPills(days);
+        return;
+      }
+    
+      const days = buildIncidentTimeline(list, 30);
+    
+      bar.innerHTML = days.map((d, idx) => {
+        const isToday = idx === days.length - 1;
+        const cls = stateToPillClass(d.state);
+        const pct = Number.isFinite(d.availability) ? d.availability.toFixed(3) : "—";
+        return `<button type="button" class="inc-pill ${cls}${isToday ? " is-today" : ""}" data-idx="${idx}" aria-label="${d.key}: ${pct}% availability" title="${d.key} • ${pct}%"></button>`;
+      }).join("");
+    
+      const totalDown = days.reduce((sum, d) => sum + (Number.isFinite(d.downtimeMs) ? d.downtimeMs : 0), 0);
+      const overall = (1 - totalDown / (days.length * DAY_MS)) * 100;
+    
+      pctEl.textContent = `${overall.toFixed(3)}%`;
+      pctEl.className = `incidents-pct ${classifyOverall(overall)}`;
+    
+      if (els.incidentSub) els.incidentSub.textContent = `Recent ${days.length} day(s) uptime rate.`;
+    
+      if (els.incidentLiveDot) {
+        els.incidentLiveDot.className = `incident-live-dot ${stateToDotClass(days[days.length - 1]?.state)}`;
+      }
+    
+      wireIncidentPills(days);
+    }
+    
+    function wireIncidentPills(days) {
+      const bar = els.incidentBar;
+      if (!bar) return;
+    
+      bar.querySelectorAll(".inc-pill").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const idx = Number(btn.dataset.idx);
+          if (!Number.isFinite(idx)) return;
+          const day = days[idx];
+          openIncidentPopover(btn, day);
+        });
+      });
+    }
+    
+    function openIncidentPopover(anchorEl, day) {
+      const pop = els.incidentPopover;
+      if (!pop || !anchorEl) return;
+    
+      pop.hidden = false;
+    
+      setText(els.ipDate, day?.key ?? "—");
+    
+      const score = Number.isFinite(day?.availability) ? `${day.availability.toFixed(3)}%` : "—";
+      setText(els.ipScore, score);
+      if (els.ipScore) els.ipScore.className = `ip-score-pct ${stateToPillClass(day?.state)}`;
+    
+      if (els.ipBadge) {
+        els.ipBadge.textContent = labelForState(day?.state);
+        els.ipBadge.className = `ip-badge ${stateToPillClass(day?.state)}`;
+      }
+    
+      const count = Array.isArray(day?.items) ? day.items.length : 0;
+      const downtime = Number.isFinite(day?.downtimeMs) ? msToHuman(day.downtimeMs) : "—";
+      if (els.ipMeta) {
+        els.ipMeta.textContent = day?.state === "unknown"
+          ? "No incident data for this date."
+          : `${count} incident(s) • Interruption: ${downtime}`;
+      }
+    
+      if (els.ipList) {
+        if (!Array.isArray(day?.items) || day.items.length === 0) {
+          els.ipList.innerHTML = `<div class="ip-empty">${day?.state === "unknown" ? "Unknown" : "No incidents"}</div>`;
+        } else {
+          const html = day.items.map((i) => {
+            const resolved = i && (i.status === "resolved" || Boolean(i.resolvedAt));
+            const dur = resolved ? duration(i.startedAt, i.resolvedAt) : duration(i.startedAt, new Date().toISOString());
+            const svc = String(i.service || "unknown").toUpperCase();
+    
+            const startStr = fmtTime(i.startedAt);
+            const endStr = resolved ? fmtTime(i.resolvedAt) : "Ongoing";
+    
+            return `
+              <div class="ip-item">
+                <div class="ip-item-title">${escapeHtml(i.title || "Incident")}</div>
+                <div class="ip-item-meta">
+                  <div class="ip-item-row">
+                    <span class="tag">${escapeHtml(svc)}</span>
+                    <span class="tag">${resolved ? "Resolving" : "Resolved"}</span>
+                  </div>
+                  <div style="margin-top:6px">
+                    Start: <b>${escapeHtml(startStr)}</b><br>
+                    End: <b>${escapeHtml(endStr)}</b><br>
+                    Duration: <b>${escapeHtml(dur)}</b>
+                  </div>
+                </div>
+              </div>
+            `;
+          }).join("");
+    
+          els.ipList.innerHTML = html;
+        }
+      }
+    
+      positionIncidentPopover(anchorEl);
+    }
+    
+    function closeIncidentPopover() {
+      if (els.incidentPopover) els.incidentPopover.hidden = true;
+    }
+    
+    function positionIncidentPopover(anchorEl) {
+      const pop = els.incidentPopover;
+      if (!pop) return;
+    
+      const wrap = anchorEl.closest(".incidents");
+      if (!wrap) return;
+    
+      const wrapRect = wrap.getBoundingClientRect();
+      const aRect = anchorEl.getBoundingClientRect();
+    
+      const padding = 12;
+      const desiredW = Math.min(340, wrapRect.width - padding * 2);
+      pop.style.width = `${desiredW}px`;
+    
+      const popRect = pop.getBoundingClientRect();
+    
+      const anchorCenter = aRect.left + aRect.width / 2 - wrapRect.left;
+    
+      let left = clamp(anchorCenter - popRect.width / 2, padding, wrapRect.width - popRect.width - padding);
+    
+      const aboveTop = (aRect.top - wrapRect.top) - popRect.height - 14;
+      const belowTop = (aRect.bottom - wrapRect.top) + 14;
+    
+      let top = aboveTop;
+      let below = false;
+    
+      if (aboveTop < padding && belowTop + popRect.height < wrapRect.height - padding) {
+        top = belowTop;
+        below = true;
+      } else {
+        top = Math.max(padding, aboveTop);
+      }
+    
+      pop.classList.toggle("is-below", below);
+      pop.style.left = `${left}px`;
+      pop.style.top = `${top}px`;
+    
+      const arrowX = clamp(anchorCenter - left, 16, popRect.width - 16);
+      pop.style.setProperty("--arrow-x", `${arrowX}px`);
+    }
+    
+    function initIncidentPopoverEvents() {
+      if (els.ipClose) els.ipClose.addEventListener("click", closeIncidentPopover);
+    
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeIncidentPopover();
+      });
+    
+      document.addEventListener("click", (e) => {
+        const pop = els.incidentPopover;
+        if (!pop || pop.hidden) return;
+    
+        if (pop.contains(e.target)) return;
+        if (e.target.closest(".inc-pill")) return;
+    
+        closeIncidentPopover();
+      });
+    
+      window.addEventListener("resize", () => closeIncidentPopover());
+    }
+    
+    
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+    
+    function renderOffline() {
+      setText(els.ping, "—");
+      setText(els.uptime, "—");
+      setText(els.guilds, "—");
+      setText(els.users, "—");
+      setText(els.updated, "—");
+      setText(els.boot, "—");
+      setText(els.pingTech, "—");
+    
+      renderService(els.svcGateway, "gateway", "Discord Gateway", "down");
+      renderService(els.svcApi, "api", "API Endpoint", "down");
+      renderService(els.svcCommands, "commands", "Command System", "down");
+    
+      setGlobal("down", "Major System Outage");
+    }
+    
+    function computeGlobalStatus(services, incidents) {
+      const anyDown = ["gateway", "api", "commands"].some((k) => normalizeState(services?.[k]) === "down");
+      const degradedSet = getDegradedServices(incidents);
+      const anyDegraded =
+        ["gateway", "api", "commands"].some((k) => applyIncidentState(k, normalizeState(services?.[k]), degradedSet) === "degraded") ||
+        degradedSet.size > 0;
+    
+      if (anyDown) return { state: "down", message: "Major System Outage" };
+      if (anyDegraded) return { state: "degraded", message: "Partial System Outage" };
+      return { state: "ok", message: "All Systems Operational" };
+    }
+    
+    async function loadOnce() {
+      try {
+        const statusP = fetchWithTimeout(CONFIG.STATUS_URL).then((r) => r.json());
+        const incidentsP = fetchWithTimeout(CONFIG.INCIDENTS_URL).then((r) => r.json());
+    
+        const [sRes, iRes] = await Promise.allSettled([statusP, incidentsP]);
+        const statusRes = sRes.status === "fulfilled" ? sRes.value : null;
+        const incidentsRes = iRes.status === "fulfilled" ? iRes.value : null;
+    
+        if (!statusRes) {
+          setGlobal("down", "Status service unreachable");
+          renderIncidents(incidentsRes);
+          return;
+        }
+    
+        if (isOfflineStatus(statusRes)) {
+          renderOffline();
+          renderIncidents(incidentsRes);
+          return;
+        }
+    
+        const ping = Number(statusRes.ping);
+        if (Number.isFinite(ping)) {
+          const p = Math.round(ping);
+          setText(els.ping, `${p} ms`);
+          chartPush(p);
+          const avg = avgPing();
+          if (Number.isFinite(avg)) setText(els.pingTech, `${Math.round(avg)} ms`);
+        } else {
+          setText(els.ping, "—");
+        }
+    
+        setText(els.uptime, statusRes.uptime ?? "—");
+        setText(els.guilds, statusRes.guilds ?? "—");
+        setText(els.users, statusRes.users ?? "—");
+    
+        setText(els.updated, statusRes.updated ? new Date(statusRes.updated).toLocaleString() : "—");
+        setText(els.boot, statusRes.lastBoot ? new Date(statusRes.lastBoot).toLocaleString() : "—");
+    
+        const degradedSet = getDegradedServices(Array.isArray(incidentsRes) ? incidentsRes : []);
+    
+        const gatewayState = applyIncidentState("gateway", normalizeState(statusRes?.services?.gateway), degradedSet);
+        const apiState = applyIncidentState("api", normalizeState(statusRes?.services?.api), degradedSet);
+        const commandsState = applyIncidentState("commands", normalizeState(statusRes?.services?.commands), degradedSet);
+    
+        renderService(els.svcGateway, "gateway", "Discord Gateway", gatewayState);
+        renderService(els.svcApi, "api", "API Endpoint", apiState);
+        renderService(els.svcCommands, "commands", "Command System", commandsState);
+    
+        renderIncidents(incidentsRes);
+    
+        const global = computeGlobalStatus(statusRes?.services, Array.isArray(incidentsRes) ? incidentsRes : []);
+        setGlobal(global.state, global.message);
+      } catch (err) {
+        console.error(err);
+        setGlobal("down", "Status service unreachable");
+        renderIncidents(null);
+      }
+    }
+    
+    function start() {
+      createChart();
+      initIncidentPopoverEvents();
+      setGlobalLoading();
+      loadOnce();
+      setInterval(loadOnce, CONFIG.REFRESH_MS);
+    }
+    
+    start();
   </script>
 </body>
 </html>
