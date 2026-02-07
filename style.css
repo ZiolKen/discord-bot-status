@@ -778,6 +778,7 @@ body{
 }
 
 @media (max-width: 420px){
+  .zzz{display:none}
   .incidents-bar{gap: 6px}
   .inc-pill{width: 10px; height: 34px}
   .incidents-pct{font-size: 38px}
