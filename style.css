@@ -506,12 +506,20 @@ body{
   .services{grid-template-columns: 1fr}
   .tech-grid{grid-template-columns: 1fr}
   .hero-meta{grid-template-columns: 1fr}
+  .incidents-bar{gap: 7px}
+  .inc-pill{width: 16px; height: 40px}
+  .incidents-pct{font-size: 42px}
+  .incident-popover{width: 325px}
 }
 @media (max-width: 520px){
   .zzz{display:none}
   .container{width: min(var(--max), calc(100% - 28px))}
   .topbar-inner{padding: 12px 0}
   .hero-kpis{grid-template-columns: 1fr}
+  .incidents-bar{gap: 6px}
+  .inc-pill{width: 14px; height: 38px}
+  .incidents-pct{font-size: 40px}
+  .incident-popover{width: 315px}
 }
 
 .incidents-head{
@@ -774,5 +782,5 @@ body{
   .incidents-bar{gap: 6px}
   .inc-pill{width: 10px; height: 34px}
   .incidents-pct{font-size: 38px}
-  .incident-popover{width: 320px}
+  .incident-popover{width: 300px}
 }
