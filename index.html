@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charSet="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta content="ie=edge" http-equiv="X-UA-Compatible" />
-  <link rel="icon" type="image/png" href="assets/ico.png" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <title>ZiolKen | Bot Status</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <meta name="description" content="Modern real‑time Discord bot status dashboard: uptime, incidents, service health, and live metrics." />
+  <meta name="theme-color" content="#0B1020" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="icon" type="image/png" href="assets/ico.png" />
   <link rel="preload" href="https://challenges.cloudflare.com/turnstile/v0/api.js" as="script" />
-  <meta name="theme-color" content="#000000" />
   <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/themes/prism.min.css" rel="stylesheet" /> -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/themes/prism-tomorrow.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.23.0/prism.min.js"></script>
@@ -20,342 +23,259 @@
   <link rel="apple-touch-icon" sizes="180x180" href="assets/ico.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="assets/ico.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="assets/ico.png" />
-  <meta name="description" content="@ジオルケン | Discord bot status, current system info & status, real-time update. • @ZiolKen." />
-  <meta name="author" content="@ジオルケン | Bot Status" />
-  <meta property="og:title" content="@ジオルケン | Bot Status" />
-  <meta property="og:description" content="@ジオルケン | Discord bot status, current system info & status, real-time update. • @ZiolKen." />
+  <meta name="author" content="ZiolKen | Bot Status" />
+  <meta property="og:title" content="ZiolKen | Bot Status" />
+  <meta property="og:description" content="Modern real‑time Discord bot status dashboard: uptime, incidents, service health, and live metrics." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="@ジオルケン | Bot Status" />
-  <meta name="twitter:description" content="@ジオルケン | Discord bot status, current system info & status, real-time update. • @ZiolKen." />
-  <link rel="stylesheet" href="style.css" />
-  <meta name="apple-mobile-web-app-title" content="@ジオルケン | Bot Status" />
-  <meta name="mobile-web-app-title" content="@ジオルケン | Bot Status" />
+  <meta name="twitter:title" content="ZiolKen | Bot Status" />
+  <meta name="twitter:description" content="Modern real‑time Discord bot status dashboard: uptime, incidents, service health, and live metrics." />
+  <meta name="apple-mobile-web-app-title" content="ZiolKen | Bot Status" />
+  <meta name="mobile-web-app-title" content="ZiolKen | Bot Status" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
 </head>
 
 <body>
-<header class="container">
-  <div class="Header">
-      <img src="https://files.catbox.moe/0zucxv.png" alt="BOTSTATUS">
-      <button class="ibtn"><a href="https://discord.com/oauth2/authorize?client_id=1398238289500307578&scope=bot&permissions=8" target="_blank"><img src="./assets/discord.png"></a></button>
+  <div class="bg" aria-hidden="true">
+    <span class="orb orb-a"></span>
+    <span class="orb orb-b"></span>
+    <span class="orb orb-c"></span>
+    <span class="grid"></span>
   </div>
 
-  <div id="global-status" class="status-banner loading">
-    <span class="pulse"></span>
-    <span id="global-text">Checking system status…</span>
-  </div>
-</header>
+  <svg class="sr-only" width="0" height="0" aria-hidden="true" focusable="false">
+    <symbol id="i-bolt" viewBox="0 0 24 24">
+      <path d="M13 2 3 14h8l-1 8 11-12h-8l0-8z" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3zm0 18c-3-1.2-6-4.9-6-9V6.3L12 4l6 2.3V11c0 4.1-3 7.8-6 9z" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 11h5v-2h-4V7h-2v6z" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24">
+      <path d="M10 2h4v6h3v4a7 7 0 0 1-6 6.93V22h-2v-3.07A7 7 0 0 1 3 12V8h3V2h4v6zm8 8H6v2a5 5 0 0 0 10 0v-2z" fill="currentColor"/>
+    </symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24">
+      <path d="M3 13h3l2-7 4 16 3-9h4l2 5h2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </svg>
 
-<main class="container">
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="#" aria-label="ZiolKen Status">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="brand-text">
+          <span class="brand-name">ZiolKen</span>
+          <span class="brand-sub">Status</span>
+        </span>
+      </a>
 
-  <!-- SUMMARY -->
-  <section class="summary">
-    <div class="card"><span>Ping</span><strong id="ping">--</strong></div>
-    <div class="card"><span>Uptime</span><strong id="uptime">--</strong></div>
-    <div class="card"><span>Servers</span><strong id="guilds">--</strong></div>
-    <div class="card"><span>Users</span><strong id="users">--</strong></div>
-  </section>
+      <div class="topbar-right">
+        <div id="global-status" class="status-pill is-loading" role="status" aria-live="polite">
+          <span class="dot"></span>
+          <span id="global-text">Checking system status…</span>
+        </div>
 
-  <!-- SERVICES -->
-  <section class="card">
-    <h2>⚙️ Services</h2>
-    <div id="service-gateway" class="service-card"></div>
-    <div id="service-api" class="service-card"></div>
-    <div id="service-commands" class="service-card"></div>
-  </section>
-
-  <!-- INCIDENTS -->
-  <section class="card">
-    <h2>🚨 Incidents</h2>
-    <div id="incidents">Loading…</div>
-  </section>
-
-  <!-- CHART -->
-  <section class="card">
-    <h2>📉 Ping History</h2>
-    <canvas id="pingChart" height="90"></canvas>
-  </section>
-
-  <!-- TECH -->
-  <section class="card tech">
-    <h2>🔧 Technical Information</h2>
-    <div class="tech-grid">
-      <div><span>Last update</span><b id="updated">--</b></div>
-      <div><span>Last boot</span><b id="boot">--</b></div>
-      <div><span>Average ping</span><b id="ping-tech">--</b></div>
-      <div><span>Bot Ver</span><b>1.3.2</b></div>
-      <div><span>Node.js</span><b>20.20.0</b></div>
-      <div><span>discord.js</span><b>14.25.1</b></div>
+        <a class="btn btn-primary" target="_blank" rel="noopener" href="https://discord.com/oauth2/authorize?client_id=1398238289500307578&scope=bot&permissions=8">
+          <svg class="icon" aria-hidden="true" viewBox="0 -28.5 256 256" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" preserveAspectRatio="xMidYMid" fill="#000000"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g> <path d="M216.856339,16.5966031 C200.285002,8.84328665 182.566144,3.2084988 164.041564,0 C161.766523,4.11318106 159.108624,9.64549908 157.276099,14.0464379 C137.583995,11.0849896 118.072967,11.0849896 98.7430163,14.0464379 C96.9108417,9.64549908 94.1925838,4.11318106 91.8971895,0 C73.3526068,3.2084988 55.6133949,8.86399117 39.0420583,16.6376612 C5.61752293,67.146514 -3.4433191,116.400813 1.08711069,164.955721 C23.2560196,181.510915 44.7403634,191.567697 65.8621325,198.148576 C71.0772151,190.971126 75.7283628,183.341335 79.7352139,175.300261 C72.104019,172.400575 64.7949724,168.822202 57.8887866,164.667963 C59.7209612,163.310589 61.5131304,161.891452 63.2445898,160.431257 C105.36741,180.133187 151.134928,180.133187 192.754523,160.431257 C194.506336,161.891452 196.298154,163.310589 198.110326,164.667963 C191.183787,168.842556 183.854737,172.420929 176.223542,175.320965 C180.230393,183.341335 184.861538,190.991831 190.096624,198.16893 C211.238746,191.588051 232.743023,181.531619 254.911949,164.955721 C260.227747,108.668201 245.831087,59.8662432 216.856339,16.5966031 Z M85.4738752,135.09489 C72.8290281,135.09489 62.4592217,123.290155 62.4592217,108.914901 C62.4592217,94.5396472 72.607595,82.7145587 85.4738752,82.7145587 C98.3405064,82.7145587 108.709962,94.5189427 108.488529,108.914901 C108.508531,123.290155 98.3405064,135.09489 85.4738752,135.09489 Z M170.525237,135.09489 C157.88039,135.09489 147.510584,123.290155 147.510584,108.914901 C147.510584,94.5396472 157.658606,82.7145587 170.525237,82.7145587 C183.391518,82.7145587 193.761324,94.5189427 193.539891,108.914901 C193.539891,123.290155 183.391518,135.09489 170.525237,135.09489 Z" fill="#5865F2" fill-rule="nonzero"> </path> </g> </g></svg>
+          Invite
+        </a>
+      </div>
     </div>
-  </section>
+  </header>
 
-</main>
+  <main class="container">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="badge-row">
+          <span class="badge">
+            <svg class="icon" aria-hidden="true"><use href="#i-pulse"></use></svg>
+            Real‑time monitoring
+          </span>
+          <span class="badge subtle">
+            Updates every <b>5s</b>
+          </span>
+        </div>
 
-<footer>
-  © 2025 ZiolKen • Status Page
-</footer>
+        <h1 class="hero-title">Modern status dashboard for your Discord bot.</h1>
+        <p class="hero-lead">
+          Clear, professional, and easy to read — live ping chart, service health, and incident history in one place.
+        </p>
 
-<script>
-const STATUS_URL = "https://discord-bot-us.onrender.com/status";
-const INCIDENTS_URL = "https://discord-bot-us.onrender.com/incidents";
+        <div class="hero-actions">
+          <a class="btn btn-ghost" href="#services">View services</a>
+          <a class="btn btn-secondary" href="#incidents">Incidents</a>
+        </div>
 
-function normalizeState(state) {
-  if (["online", "operational", "up"].includes(state)) return "online";
-  if (["degraded", "partial"].includes(state)) return "degraded";
-  return "down";
-}
-
-const pingHistory = [];
-const MAX = 30;
-
-const chart = new Chart(
-  document.getElementById("pingChart"), {
-    type:"line",
-    data:{ labels:[], datasets:[{ data:[], borderWidth:2, tension:.4 }]},
-    options:{ plugins:{ legend:{display:false}}, scales:{ x:{display:false}}}
-  }
-);
-
-function chartPush(p) {
-  if (pingHistory.length >= MAX) pingHistory.shift();
-  pingHistory.push(p);
-  chart.data.labels = pingHistory.map((_,i)=>i);
-  chart.data.datasets[0].data = pingHistory;
-  chart.update();
-}
-
-function isOfflineStatus(s) {
-  return s && s.status === "offline";
-}
-
-/* ===== UPTIME ===== */
-const stats = {
-  gateway:{up:0,down:0},
-  api:{up:0,down:0},
-  commands:{up:0,down:0}
-};
-
-const uptime = s => {
-  const t=s.up+s.down;
-  return t===0?"100%":((s.up/t)*100).toFixed(2)+"%";
-};
-
-function fmtTime(t) {
-  return new Date(t).toLocaleString();
-}
-
-function duration(start, end) {
-  const ms = new Date(end) - new Date(start);
-  const m = Math.floor(ms / 60000);
-  const s = Math.floor((ms % 60000) / 1000);
-  return `${m}m ${s}s`;
-}
-
-function fetchWithTimeout(url, timeout = 1000) {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-
-  return fetch(url, { signal: controller.signal })
-    .finally(() => clearTimeout(id));
-}
-
-/* ===== RENDER ===== */
-function getDegradedServices(incidents) {
-  const set = new Set();
-
-  incidents.forEach(i => {
-    if (!i.resolvedAt && i.status !== "resolved") {
-      set.add(i.service);
-    }
-  });
-
-  return set;
-}
-
-function applyIncidentState(serviceName, baseState, degradedSet) {
-  if (baseState !== "online") return baseState;
-  return degradedSet.has(serviceName) ? "degraded" : "online";
-}
-
-function renderService(id, name, state) {
-  state === "online"
-    ? stats[id].up++
-    : stats[id].down++;
-
-  const label =
-    state === "online"
-      ? "• Operational"
-      : state === "degraded"
-      ? "• Degraded"
-      : "• Down";
-
-  document.getElementById(`service-${id}`).innerHTML = `
-    <div>
-      <div class="service-name">${name}</div>
-      <div class="service-meta">Uptime: ${uptime(stats[id])}</div>
-    </div>
-    <div class="service-status ${state}">
-      ${label}
-    </div>`;
-}
-
-function renderGlobal(status, incidents) {
-  const box = document.getElementById("global-status");
-  const text = document.getElementById("global-text");
-
-  let cls="ok", msg="All Systems Operational";
-
-  if (status.status === "down") {
-    cls="down";
-    msg="Major System Outage";
-  } else if (
-    status.status === "degraded" ||
-    incidents.some(i => !i.resolvedAt)
-  ) {
-    cls="degraded";
-    msg="Partial System Outage";
-  }
-
-  box.className = `status-banner ${cls}`;
-  text.textContent = msg;
-}
-
-function renderOffline() {
-  ["ping","ping-tech","uptime","guilds","users","updated","boot"]
-    .forEach(id => document.getElementById(id).textContent = "--");
-
-  renderService("gateway", "Discord Gateway", "down");
-  renderService("api", "API Endpoint", "down");
-  renderService("commands", "Command System", "down");
-
-  const box = document.getElementById("global-status");
-  box.className = "status-banner down";
-  document.getElementById("global-text").textContent =
-    "Major System Outage";
-}
-
-function renderIncidents(list) {
-  const el = document.getElementById("incidents");
-
-  if (!list || !list.length) {
-    el.innerHTML = `<div class="incident-empty">No incidents</div>`;
-    return;
-  }
-
-  el.innerHTML = `<div class="incident-list"></div>`;
-  const wrap = el.firstChild;
-
-  list
-    .sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt))
-    .forEach(i => {
-      const resolved = i.status === "resolved";
-      const dur = resolved
-        ? duration(i.startedAt, i.resolvedAt)
-        : "Ongoing";
-
-      wrap.innerHTML += `
-        <div class="incident-item ${resolved ? "resolved" : "active"}">
-          <span class="incident-dot"></span>
-
-          <div class="incident-title">
-            ${i.title}
-            <span class="incident-badge ${resolved ? "resolved" : "active"}">
-              ${resolved ? "Resolved" : "Resolving"}
-            </span>
+        <div class="hero-meta">
+          <div class="meta-item">
+            <span class="meta-label">Last update</span>
+            <span class="meta-value skeleton" id="updated">—</span>
           </div>
-
-          <div class="incident-meta">
-            Service: <b>${i.service.toUpperCase()}</b>
+          <div class="meta-item">
+            <span class="meta-label">Last boot</span>
+            <span class="meta-value skeleton" id="boot">—</span>
           </div>
-
-          <div class="incident-time">
-            Started: ${fmtTime(i.startedAt)}<br>
-            ${resolved ? `Resolved: ${fmtTime(i.resolvedAt)}<br>` : ""}
-            Duration: ${dur}
+          <div class="meta-item">
+            <span class="meta-label">Average ping</span>
+            <span class="meta-value skeleton" id="ping-tech">—</span>
           </div>
         </div>
-      `;
-    });
-}
+      </div>
 
-/* ===== LOAD ===== */
-async function load() {
-  try {
-    const [s, incidents] = await Promise.all([
-      fetchWithTimeout(STATUS_URL).then(r => r.json()),
-      fetchWithTimeout(INCIDENTS_URL).then(r => r.json())
-    ]);
+      <div class="hero-card glass">
+        <div class="hero-card-head">
+          <div class="hero-card-title">
+            <span class="mini-dot"></span>
+            Live ping
+          </div>
+          <div class="hero-card-stat">
+            <span class="label">Now</span>
+            <span class="value skeleton" id="ping">—</span>
+          </div>
+        </div>
 
-    if (isOfflineStatus(s)) {
-      renderOffline();
-      renderIncidents(incidents);
-      return;
-    }
+        <div class="chart-wrap">
+          <canvas id="pingChart" height="120" aria-label="Ping history chart" role="img"></canvas>
+        </div>
 
-    document.getElementById("ping").textContent = `${Math.round(s.ping)} ms`;
-    document.getElementById("ping-tech").textContent = `${Math.round(s.ping)} ms`;
-    document.getElementById("uptime").textContent = s.uptime;
-    document.getElementById("guilds").textContent = s.guilds;
-    document.getElementById("users").textContent = s.users;
+        <div class="hero-kpis">
+          <div class="kpi">
+            <span class="kpi-label">Uptime</span>
+            <span class="kpi-value skeleton" id="uptime">—</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Servers</span>
+            <span class="kpi-value skeleton" id="guilds">—</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-label">Users</span>
+            <span class="kpi-value skeleton" id="users">—</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-    document.getElementById("updated").textContent =
-      new Date(s.updated).toLocaleString();
+    <section class="highlights" aria-label="Feature highlights">
+      <article class="highlight glass">
+        <div class="h-icon"><svg class="icon" aria-hidden="true"><use href="#i-bolt"></use></svg></div>
+        <h3>Fast insight</h3>
+        <p>Instantly see uptime, ping, and service health with clear visual hierarchy.</p>
+      </article>
 
-    document.getElementById("boot").textContent =
-      new Date(s.lastBoot).toLocaleString();
+      <article class="highlight glass">
+        <div class="h-icon"><svg class="icon" aria-hidden="true"><use href="#i-shield"></use></svg></div>
+        <h3>Reliable status</h3>
+        <p>Global banner reflects incidents and degradation for trustworthy reporting.</p>
+      </article>
 
-    chartPush(s.ping);
+      <article class="highlight glass">
+        <div class="h-icon"><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg></div>
+        <h3>Incident timeline</h3>
+        <p>Track ongoing and resolved incidents with start time, duration, and service tags.</p>
+      </article>
 
-    const degradedSet = getDegradedServices(incidents);
+      <article class="highlight glass">
+        <div class="h-icon"><svg class="icon" aria-hidden="true"><use href="#i-plug"></use></svg></div>
+        <h3>Drop‑in</h3>
+        <p>Plain HTML/CSS/JS. Keep your existing API endpoints and JSON shape.</p>
+      </article>
+    </section>
 
-    const hostState = applyIncidentState(
-      "host",
-      normalizeState(s.hostService),
-      degradedSet
-    );
+    <section id="services" class="section">
+      <div class="section-head">
+        <h2>Services</h2>
+        <p>Operational status for each bot subsystem.</p>
+      </div>
 
-    const gatewayState = applyIncidentState(
-      "gateway",
-      normalizeState(s.services.gateway),
-      degradedSet
-    );
+      <div class="services">
+        <div id="service-gateway" class="service glass"></div>
+        <div id="service-api" class="service glass"></div>
+        <div id="service-commands" class="service glass"></div>
+      </div>
+    </section>
 
-    const apiState = applyIncidentState(
-      "api",
-      normalizeState(s.services.api),
-      degradedSet
-    );
+    <section id="incidents" class="section">
+      <div class="section-head">
+        <h2>Incidents</h2>
+        <p>Recent events affecting availability and performance.</p>
+      </div>
 
-    const commandState = applyIncidentState(
-      "commands",
-      normalizeState(s.services.commands),
-      degradedSet
-    );
+      <div class="glass incidents">
+        <div class="incidents-head">
+          <a class="incidents-link" href="#incidents">
+            Incidents <span aria-hidden="true">→</span>
+          </a>
+          <span id="incidentLiveDot" class="incident-live-dot" aria-hidden="true"></span>
+        </div>
 
-    renderService("gateway", "Discord Gateway", gatewayState);
-    renderService("api", "API Endpoint", apiState);
-    renderService("commands", "Command System", commandState);
+        <div id="incidentBar" class="incidents-bar" role="list" aria-label="Incidents last 30 days">
+          <div class="incident-empty">Loading…</div>
+        </div>
 
-    renderIncidents(incidents);
+        <div class="incidents-foot">
+          <div id="incidentPct" class="incidents-pct">—</div>
+          <div id="incidentSub" class="incidents-sub">Recent 30-day uptime rate.</div>
 
-    renderGlobal({ hostService: hostState }, incidents);
+          <div class="incidents-legend" aria-label="Legend">
+            <span class="legend"><i class="lg lg-unknown"></i>Unknown</span>
+            <span class="legend"><i class="lg lg-ok"></i>Operational</span>
+            <span class="legend"><i class="lg lg-warn"></i>Partial Error</span>
+            <span class="legend"><i class="lg lg-bad"></i>Major Error</span>
+          </div>
+        </div>
 
-  } catch (e) {
-    console.error(e);
-    const box = document.getElementById("global-status");
-    box.className = "status-banner down";
-    document.getElementById("global-text").textContent =
-      "Status service unreachable";
-  }
-}
+        <div id="incidentPopover" class="incident-popover" hidden role="dialog" aria-label="Day details">
+          <div class="ip-head">
+            <div class="ip-date" id="ipDate">—</div>
+            <button type="button" class="ip-close" id="ipClose" aria-label="Close">×</button>
+          </div>
 
-load();
-setInterval(load,5000);
-load();
-</script>
+          <div class="ip-score">
+            <div class="ip-score-pct" id="ipScore">—</div>
+            <div class="ip-score-row">
+              <span class="ip-badge" id="ipBadge">—</span>
+              <span class="ip-meta" id="ipMeta">—</span>
+            </div>
+          </div>
 
+          <div class="ip-divider"></div>
+
+          <div class="ip-section">
+            <div class="ip-section-title">Error</div>
+            <div class="ip-list" id="ipList"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="section-head">
+        <h2>Technical</h2>
+        <p>Build and runtime information.</p>
+      </div>
+
+      <div class="glass tech">
+        <div class="tech-grid">
+          <div class="tech-item"><span>Bot Version</span><b id="botVer">1.3.2</b></div>
+          <div class="tech-item"><span>Node.js</span><b id="nodeVer">20.20.0</b></div>
+          <div class="tech-item"><span>discord.js</span><b id="djsVer">14.25.1</b></div>
+          <div class="tech-item"><span>Endpoint</span><b class="mono" id="endpoint">/status</b></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner" style="align-items:center;justify-contents:center">
+      <span class="footer-pill">© <span id="year"></span> ZiolKen • Status Page</span>
+    </div>
+  </footer>
+
+  <script type="module">
+
+  </script>
 </body>
-
 </html>
