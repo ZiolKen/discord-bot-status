@@ -625,7 +625,6 @@ body{
 .lg-warn{background: rgba(247,201,72,.85); border-color: rgba(247,201,72,.55)}
 .lg-bad{background: rgba(255,93,93,.85); border-color: rgba(255,93,93,.55)}
 
-/* Popover */
 .incident-popover{
   position:absolute;
   left: 12px;
