@@ -399,7 +399,7 @@
             data: [],
             borderColor: gradient,
             borderWidth: 2,
-            tension: 0.35,
+            tension: 0.5,
             pointRadius: 0,
             fill: true,
             backgroundColor: "rgba(124,92,255,0.10)",
@@ -414,7 +414,7 @@
             y: {
               display: false,
               suggestedMin: 0,
-              suggestedMax: 600,
+              suggestedMax: 300,
             },
           },
           animation: { duration: 350 },
@@ -743,7 +743,7 @@
                 <div class="ip-item-meta">
                   <div class="ip-item-row">
                     <span class="tag">${escapeHtml(svc)}</span>
-                    <span class="tag">${resolved ? "Resolving" : "Resolved"}</span>
+                    <span class="tag">${resolved ? "Resolved" : "Resolving"}</span>
                   </div>
                   <div style="margin-top:6px">
                     Start: <b>${escapeHtml(startStr)}</b><br>
