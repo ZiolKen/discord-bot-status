@@ -854,6 +854,41 @@ body{
 .footer-inner{
   justify-content: center;
 }
+
 .footer-pill{
+  display: inline-block;
   text-align: center;
+}
+
+.section{ position: relative; z-index: 0; }
+
+#incidents.section{ z-index: 50; }
+
+#incidents .incident-popover{ z-index: 2000; }
+
+#incidents .incidents{ overflow: visible; }
+
+#incidents .incident-popover{
+  width: min(320px, calc(100% - 24px));
+  padding: 12px;
+}
+
+#incidents .ip-date{ font-size: 16px; }
+#incidents .ip-score-pct{ font-size: 28px; }
+#incidents .ip-list{ max-height: 200px; }
+
+@media (max-width: 520px){
+  #incidents .incident-popover{
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 12px !important;
+    top: auto !important;
+
+    width: auto !important;
+    max-height: 55vh;
+  }
+
+  #incidents .incident-popover::before{ display:none; }
+  #incidents .ip-list{ max-height: 28vh; }
 }
