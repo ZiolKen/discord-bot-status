@@ -101,15 +101,8 @@ body{
   text-decoration:none;
   color:var(--text);
 }
-.brand-mark{
+.brand-mark img{
   width:38px; height:38px;
-  border-radius: 12px;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(124,92,255,.95), rgba(124,92,255,0) 60%),
-    radial-gradient(circle at 70% 70%, rgba(53,208,127,.8), rgba(53,208,127,0) 55%),
-    rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  box-shadow: 0 8px 22px rgba(0,0,0,.35);
 }
 .brand-text{display:flex; flex-direction:column; line-height:1.05}
 .brand-name{font-weight:700; letter-spacing:.2px}
