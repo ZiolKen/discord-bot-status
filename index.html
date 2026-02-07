@@ -416,7 +416,20 @@
           },
           scales: {
             x: { display: false, grid: { display: false } },
-            y: { display: false, grid: { display: false }, suggestedMax: 300 },
+            y: {
+              display: true,
+              grid: { display: true },
+              border: { display: false },
+              ticks: {
+                display: true,
+                stepSize: 2,
+                precision: 0,
+                padding: 6,
+                callback: (v) => v,
+              },
+              suggestedMin: 44,
+              suggestedMax: 52,
+            },
           },
           animation: { duration: 350 },
           elements: { line: { capBezierPoints: true } },
