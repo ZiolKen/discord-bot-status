@@ -507,6 +507,7 @@ body{
 }
 
 @media (max-width: 960px){
+  .zzz{display:none}
   .hero{grid-template-columns: 1fr; padding-top: 22px}
   .highlights{grid-template-columns: repeat(2, minmax(0,1fr))}
   .services{grid-template-columns: 1fr}
@@ -514,13 +515,10 @@ body{
   .hero-meta{grid-template-columns: 1fr}
 }
 @media (max-width: 520px){
+  .zzz{display:none}
   .container{width: min(var(--max), calc(100% - 28px))}
   .topbar-inner{padding: 12px 0}
   .hero-kpis{grid-template-columns: 1fr}
-}
-
-@media (prefers-reduced-motion: reduce){
-  *{animation: none !important; transition: none !important; scroll-behavior:auto !important}
 }
 
 .incidents-head{
