@@ -399,7 +399,7 @@
             data: [],
             borderColor: gradient,
             borderWidth: 2,
-            tension: 0.5,
+            tension: 2,
             pointRadius: 0,
             fill: true,
             backgroundColor: "rgba(124,92,255,0.10)",
@@ -407,15 +407,9 @@
         },
         options: {
           responsive: true,
-          maintainAspectRatio: false,
           plugins: { legend: { display: false }, tooltip: { enabled: false } },
           scales: {
-            x: { display: false },
-            y: {
-              display: false,
-              suggestedMin: 0,
-              suggestedMax: 300,
-            },
+            x: { display: false }
           },
           animation: { duration: 350 },
         },
