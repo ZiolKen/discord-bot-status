@@ -500,7 +500,6 @@ body{
 }
 
 @media (max-width: 960px){
-  .zzz{display:none}
   .hero{grid-template-columns: 1fr; padding-top: 22px}
   .highlights{grid-template-columns: repeat(2, minmax(0,1fr))}
   .services{grid-template-columns: 1fr}
