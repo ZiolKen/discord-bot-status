@@ -564,8 +564,8 @@
     
     function classifyOverall(overallAvailabilityPct) {
       if (!Number.isFinite(overallAvailabilityPct)) return "is-unknown";
-      if (overallAvailabilityPct >= 97) return "is-ok";
-      if (overallAvailabilityPct >= 95) return "is-warn";
+      if (overallAvailabilityPct >= 95) return "is-ok";
+      if (overallAvailabilityPct >= 80) return "is-warn";
       return "is-bad";
     }
     
