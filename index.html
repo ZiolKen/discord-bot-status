@@ -556,7 +556,7 @@
     
     function classifyDay(downtimeMs, availabilityPct) {
       if (!Number.isFinite(downtimeMs) || !Number.isFinite(availabilityPct)) return "unknown";
-      if (downtimeMs <= 1 * 60 * 1000) return "ok";
+      if (downtimeMs <= 1 * 60 * 60 * 1000) return "ok";
     
       if (availabilityPct < 80 || downtimeMs >= 6 * 60 * 60 * 1000) return "bad";
       return "warn";
